@@ -1,0 +1,5 @@
+drupal-7*
+env
+*.pyc
+*.sqlite
+    
