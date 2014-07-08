@@ -19,9 +19,6 @@ create_all()
 class DuplicateException(Exception):
     pass
 
-class ParseException(Exception):
-    pass
-
 # Generic scraper class
 class SiteScraper:
     RSS = False
@@ -67,7 +64,12 @@ class SiteScraper:
                 # Process pages until there are no more
                 while 1:
                     soup = self.get(link)
-                    link = self._next_link(soup)
+
+                    # If _next_link() barfs, scrape is over
+                    try:
+                        link = self._next_link(soup)
+                    except:
+                        link = None
 
                     for item in self._get_items(soup):
                         try:
@@ -77,6 +79,9 @@ class SiteScraper:
                         except Exception, e:
                             logging.exception(e)
                             print 'Processing error, skipping item'
+
+                    # Commit after each page is processed
+                    session.commit()
 
                     # When next page link is None, scrape's complete
                     if link is None:
@@ -94,9 +99,10 @@ class SiteScraper:
 
         # Log any uncaught exceptions
         except Exception, e:
-            print 'Scrape error in %s' % self.__class__.__name__
+            print 'Uncaught error in %s' % self.__class__.__name__
             logging.exception(e)
 
+        # Commit any stragglers (?)
         session.commit()
 
     # Save an article
@@ -181,7 +187,7 @@ class AsianDevelopmentBank(SiteScraper):
                 'title': article['title'],
                 'url': article['feedburner_origlink'],
                 'body': article['summary'],
-                'date': dateutil.parser.parse(article['published'])
+                'date': self.get_date(article['published'])
             })                
 
 class ASEAN(SiteScraper):
@@ -189,11 +195,8 @@ class ASEAN(SiteScraper):
     URL_BASE = 'http://www.asean.org'
 
     def _next_link(self, soup):
-        try:
-            return self.URL_BASE + soupselect.select(
-                soup, 'div.pagination-bg a.next')[0]['href']
-        except:
-            return None
+        return self.URL_BASE + soupselect.select(
+            soup, 'div.pagination-bg a.next')[0]['href']
 
     def _get_items(self, soup):
         return soupselect.select(soup, 'div.teaser-item')
@@ -205,7 +208,7 @@ class ASEAN(SiteScraper):
         body = unicode(soupselect.select(item, 'div.pos-content')[0])
 
         m = re.search('(\d{2} \w+ \d{4})', rough_date)
-        date = dateutil.parser.parse(m.groups()[0])
+        date = self.get_date(m.groups()[0])
 
         self.save({
             'title': title,
@@ -223,6 +226,7 @@ class GlobalDevelopmentNetworkEAsia(SiteScraper):
         for item in items:
             print a
 
+# TODO: broken feed            
 class GlobalDevelopmentNetworkSAsia(SiteScraper):
     URL = 'http://feeds.feedburner.com/gdnet/southasia'
     RSS = True
@@ -237,7 +241,7 @@ class UNESCAP(SiteScraper):
     def _process_item(self, item):
         title = item.find('h2').find('a').text
         url = self.URL_BASE + item.find('h2').find('a')['href']
-        date = dateutil.parser.parse(soupselect.select(
+        date = self.get_date(soupselect.select(
             item, '.date-display-single')[0].text)
         body = soupselect.select(item, '.field-name-body p')[0].text
 
@@ -271,11 +275,8 @@ class SEARCA(SiteScraper):
     URL_BASE = 'http://www.searca.org'
 
     def _next_link(self, soup):
-        try:
-            return self.URL_BASE + soupselect.select(
-                soup, 'a[title=Next]')[0]['href']
-        except:
-            return None
+        return self.URL_BASE + soupselect.select(
+            soup, 'a[title=Next]')[0]['href']
 
     def _get_items(self, soup):
         tables = soupselect.select(soup, 'table.contentpaneopen')        
@@ -342,11 +343,8 @@ class UNESCAPEventScraper(SiteScraper):
     URL_BASE = 'http://www.unescap.org'
 
     def _next_link(self, soup):
-        try:
-            return self.URL_BASE + soupselect.select(
-                soup, 'li.pager-next a')[0]['href']
-        except:
-            return None
+        return self.URL_BASE + soupselect.select(
+            soup, 'li.pager-next a')[0]['href']
 
     def _get_items(self, soup):
         return soupselect.select(soup, 'div.item-list li.views-row')
@@ -411,11 +409,8 @@ class ADBAgriculturePubScraper(SiteScraper):
     URL_BASE = 'http://www.adb.org'
 
     def _next_link(self, soup):
-        try:
-            return self.URL_BASE + soupselect.select(
-                soup, 'li.pager-next a')[0]['href']
-        except:
-            return None
+        return self.URL_BASE + soupselect.select(
+            soup, 'li.pager-next a')[0]['href']
 
     def _get_items(self, soup):
         return soupselect.select(soup, 'div.views-row')
@@ -442,20 +437,22 @@ class UNESCAPPubScraper(SiteScraper):
 
 if __name__ == '__main__':
     scrapers = [
-        # 'WBSouthAsia',
-        # 'WBEastAsia',
-        # 'AsianDevelopmentBank',
-        # 'ASEAN',
-        # 'GlobalDevelopmentNetworkEAsia',
-        # 'GlobalDevelopmentNetworkSAsia',
-        # 'UNESCAP',
-        # 'FAOAsia',
-        # 'SEARCA',
+
+        # Articles
+        'WBSouthAsia',
+        'WBEastAsia',
+        'AsianDevelopmentBank',
+        'ASEAN',
+        'UNESCAP',
+        'FAOAsia',
+        'SEARCA',
         'CACAARI',
-        
+
+        # Events
         'APARRIEventScraper',
         'UNESCAPEventScraper',
 
+        # Pubs
         'WBSouthAsiaPubScraper',
         'WBEastAsiaPubScraper',
         'ADBAgriculturePubScraper',
