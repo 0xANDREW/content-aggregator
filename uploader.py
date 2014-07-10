@@ -1,8 +1,23 @@
 import os
 import json
 import datetime
+import logging
 
 import requests
+
+from model import *
+
+logging.getLogger('requests').setLevel(logging.WARNING)
+
+MODULE_LOG_LEVEL = logging.DEBUG
+
+ch = logging.StreamHandler()
+ch.setFormatter(logging.Formatter('[%(levelname)s] %(asctime)s %(message)s'))
+ch.setLevel(MODULE_LOG_LEVEL)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(MODULE_LOG_LEVEL)
+logger.addHandler(ch)
 
 class DrupalPoster:
     def __init__(self):
@@ -20,6 +35,8 @@ class DrupalPoster:
         return '%s/%s' % (self.__base, path)
 
     def __login(self):
+        logger.info('Logging in to Drupal...')
+
         data = { 'username': self.__user, 'password': self.__pass }
 
         r = requests.post(self.__url(self.__login_path), 
@@ -75,19 +92,6 @@ class DrupalPoster:
 
         if r.status_code == requests.codes.ok:
             thing.time_posted = datetime.datetime.now()
+            session.commit()
         else:
-            print r.status_code, r.text
-
-if __name__ == '__main__':
-    from model import *
-    setup_all()
-    create_all()
-
-    d = DrupalPoster()
-    
-    for p in Article.pending_post():
-        print p.title
-        d.post(p)
-
-    session.commit()
-    
+            logger.error('%d %s' % (r.status_code, r.text))

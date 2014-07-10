@@ -13,8 +13,17 @@ import dateutil.parser
 
 from model import *
 
-setup_all()
-create_all()
+logging.getLogger('requests').setLevel(logging.WARNING)
+
+MODULE_LOG_LEVEL = logging.DEBUG
+
+ch = logging.StreamHandler()
+ch.setFormatter(logging.Formatter('[%(levelname)s] %(asctime)s %(message)s'))
+ch.setLevel(MODULE_LOG_LEVEL)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(MODULE_LOG_LEVEL)
+logger.addHandler(ch)
 
 class DuplicateException(Exception):
     pass
@@ -49,17 +58,17 @@ class SiteScraper:
 
     # Base scrape method for RSS and regular sites
     def scrape(self):
-        print 'Starting scrape for %s' % self.__class__.__name__
+        logger.info('Starting scrape for %s' % self.__class__.__name__)
 
         try:
             if self.RSS:
                 self._scrape_rss(self.get())
-                print 'Scrape complete for %s' % self.__class__.__name__
+                logger.info('Scrape complete for %s' % self.__class__.__name__)
             else:
                 page = 1
                 link = None
 
-                print page, self.URL
+                logger.debug('%d %s' % (page, self.URL))
 
                 # Process pages until there are no more
                 while 1:
@@ -77,30 +86,31 @@ class SiteScraper:
 
                         # Catch all processing errors, skip item
                         except Exception, e:
-                            logging.exception(e)
-                            print 'Processing error, skipping item'
+                            logger.error('Processing error, skipping item')
+                            logger.exception(e)
 
                     # Commit after each page is processed
                     session.commit()
 
                     # When next page link is None, scrape's complete
                     if link is None:
-                        print 'Scrape complete for %s' % self.__class__.__name__
+                        logger.info('Scrape complete for %s' % self.__class__.__name__)
                         break
                         
                     else:
                         page += 1
-                        print page, link
+                        logger.debug('%d %s' % (page, link))
 
         # Abort when dupe found
         # TODO: scan in reverse order?
         except DuplicateException, e:
-            print 'Found duplicate item, aborting', e
+            logger.warning('Found duplicate item, aborting')
+            logger.exception(e)
 
         # Log any uncaught exceptions
         except Exception, e:
-            print 'Uncaught error in %s' % self.__class__.__name__
-            logging.exception(e)
+            logger.error('Uncaught error in %s' % self.__class__.__name__)
+            logger.exception(e)
 
         # Commit any stragglers (?)
         session.commit()
