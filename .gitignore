@@ -1,5 +1,8 @@
 drupal-7*
 env
+agg_env
 *.pyc
 *.sqlite
+*.env
+  
     

@@ -2,5 +2,5 @@ feedparser
 beautifulsoup4
 requests
 https://github.com/syabro/soupselect/archive/master.zip
-elixir
 python-dateutil
+sqlalchemy

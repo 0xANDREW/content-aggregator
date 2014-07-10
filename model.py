@@ -1,9 +1,17 @@
+import sys
+
+sys.path.append('elixir')
 from elixir import *
 
 metadata.bind = 'sqlite:///db/resakss.sqlite'
 # metadata.bind.echo = True
 
-class Article(Entity):
+class DrupalBase:
+    @classmethod
+    def pending_post(cls):
+        return cls.query.filter_by(time_posted=None).all()    
+
+class Article(DrupalBase, Entity):
     title = Field(Unicode)
     url = Field(Unicode)
     body = Field(UnicodeText)
@@ -12,7 +20,7 @@ class Article(Entity):
     time_posted = Field(DateTime)
     scraper_type = Field(Unicode)
     
-class Event(Entity):
+class Event(DrupalBase, Entity):
     title = Field(Unicode)
     url = Field(Unicode)
     body = Field(UnicodeText)
@@ -23,7 +31,7 @@ class Event(Entity):
     end_time = Field(DateTime)
     scraper_type = Field(Unicode)
     
-class Publication(Entity):
+class Publication(DrupalBase, Entity):
     title = Field(Unicode)
     url = Field(Unicode)
     body = Field(UnicodeText)
