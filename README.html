@@ -1,0 +1,60 @@
+<h1>ReSAKSS Content Aggregator</h1>
+
+<h2>Drupal Instance Preparation</h2>
+
+<h3>Required Modules</h3>
+
+<ul>
+<li><code>services</code> </li>
+<li><code>libraries</code> (upgrade to >= 2.2)</li>
+</ul>
+
+<h3>Steps</h3>
+
+<ol>
+<li>Enable <code>services</code> module</li>
+<li>Enable <code>REST Server</code> module</li>
+<li>Add service endpoint (<code>/admin/structure/services/add</code>)
+<ol>
+<li>Name: <code>api</code></li>
+<li>Server: <code>REST</code></li>
+<li>Path: <code>api</code></li>
+<li>Session authentication: checked</li>
+</ol></li>
+<li>Edit endpoint resources (/admin/structure/services/list/api/resources)
+<ol>
+<li>Enable <code>node/create</code> resource</li>
+<li>Enable <code>user/login</code> resource</li>
+</ol></li>
+<li>Edit endpoint REST parameters (/admin/structure/services/list/api/server)
+<ol>
+<li>Response formatters: <code>json</code> only</li>
+<li>Request parsing: <code>application/json</code> only</li>
+</ol></li>
+<li>Create user <code>feed</code> with <code>developer</code> role</li>
+</ol>
+
+<h2>Running the Aggregator</h2>
+
+<h3>Requirements</h3>
+
+<ul>
+<li>Python 2.7</li>
+<li><code>virtualenv</code> library for Python</li>
+<li><code>sqlite3</code> system library</li>
+</ul>
+
+<h3>Steps</h3>
+
+<ol>
+<li>Edit <code>drupal.env.sample</code> in the source tree to match your instance's parameters</li>
+<li>Save as <code>drupal.env</code></li>
+<li>Execute <code>run.sh</code> from the project root</li>
+</ol>
+
+<h3>Notes</h3>
+
+<ul>
+<li>The scraping process takes 1-2 hours to run the first time. Subsequent runs take much less time since the process aborts the feed as soon as it finds a duplicate URL. The time required to post all the items to Drupal depends on the number of items scraped.</li>
+<li>If it's going to be a <code>cron</code> job, ensure that <code>run.sh</code> is run from the project root.</li>
+</ul>
