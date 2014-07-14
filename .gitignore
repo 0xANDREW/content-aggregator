@@ -1,5 +1,8 @@
 drupal-7*
-drupal*
+drupal.env
+drupal-dev
+drupal-prod-stock
+drupal-prod
 env
 agg_env
 *.pyc
