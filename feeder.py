@@ -1,3 +1,4 @@
+import sys
 import argparse
 import logging
 
@@ -47,7 +48,11 @@ if __name__ == '__main__':
             getattr(scraper, s)().scrape()
 
     if not args.no_post:
-        d = uploader.DrupalPoster()
+        try:
+            d = uploader.DrupalPoster()
+        except:
+            logging.error('Login error, exiting')
+            sys.exit(1)
 
         do_post(d, Article.pending_post())
         do_post(d, Event.pending_post())
