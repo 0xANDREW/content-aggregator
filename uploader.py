@@ -20,6 +20,21 @@ logger.setLevel(MODULE_LOG_LEVEL)
 logger.addHandler(ch)
 
 class DrupalPoster:
+    CONTENT_TYPE_MAP = {
+        'article': 'blog_post',
+        'event': 'event',
+        'publication': 'resource'
+    }
+
+    BODY_TEMPLATE = """%s
+
+    Originally published on %s. Please click the following URL for more info: %s
+    """
+
+    MAX_TITLE_LEN = 100
+    DATE_FMT = '%Y-%m-%d'
+    PUB_TYPE = '608'
+
     def __init__(self):
         self.__base = os.environ['DRUPAL_BASE']
         self.__user = os.environ['DRUPAL_USER']
@@ -45,43 +60,39 @@ class DrupalPoster:
         self.__cookies = { r.json()['session_name']: r.json()['sessid'] }
         self.__headers['x-csrf-token'] = r.json()['token']
 
-    def __field_value(self, value, extra=[]):
-        for e in extra:
-            if type(e) == datetime.datetime:
-                value += e.isoformat()
-            else:
-                value += e
+    # Append original date and URL to body
+    def __body(self, body, date, url):
+        date_text = date.strftime(self.DATE_FMT) if date else ''
 
-        return { 'und': [{ 'value': value }] }
-
-    # def __field_date_value(self, date):
-    #     return { 
-    #         'und': [{ 
-    #             'value': {
-    #                 'date': date.strftime('%m/%d/%Y - %H:%M')
-    #             }
-    #         }] 
-    #     }
-
-    def post(self, thing):
-        node_type = thing.__class__.__name__.lower()
-
-        data = {
-            'title': thing.title,
-            'type': 'article'
+        return { 
+            'und': [{ 
+                'value': self.BODY_TEMPLATE % (body, date_text, url) 
+            }] 
         }
 
-        if node_type in ('article', 'publication'):
-            data['body'] = self.__field_value(
-                thing.body, 
-                [ thing.date, thing.url ]
-            )
+    def post(self, thing):
+        node_type = self.CONTENT_TYPE_MAP[thing.__class__.__name__.lower()]
 
-        elif node_type == 'event':
-            data['body'] = self.__field_value(
-                thing.body, 
-                [ thing.start_time, thing.end_time, thing.url ]
-            )
+        data = {
+            'title': thing.title[:self.MAX_TITLE_LEN],
+            'type': node_type,
+            'body': self.__body(thing.body, thing.date, thing.url)
+        }
+
+        # Custom structure required for custom fields
+        if node_type == 'resource':
+            data['field_publication_type'] = {
+                'und': [ self.PUB_TYPE ]
+            }
+
+            if thing.date:
+                data['field_publication_date'] = {
+                    'und': [{ 
+                        'value': { 
+                            'date': thing.date.strftime('%Y')
+                        }
+                    }]
+                }
 
         r = requests.post(
             self.__url(self.__node_path),

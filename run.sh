@@ -20,5 +20,5 @@ else
     pip install -r requirements.txt
 fi
 
-python ./uploader.py
+python ./feeder.py --no-scrape scrapers.txt
 

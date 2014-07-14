@@ -1,4 +1,5 @@
 drupal-7*
+drupal*
 env
 agg_env
 *.pyc
