@@ -28,6 +28,9 @@ logger.addHandler(ch)
 class DuplicateException(Exception):
     pass
 
+class ProcessingError(Exception):
+    pass
+
 # Generic scraper class
 class SiteScraper:
     RSS = False
@@ -62,7 +65,16 @@ class SiteScraper:
 
         try:
             if self.RSS:
-                self._scrape_rss(self.get())
+                for params in self._scrape_rss(self.get()):
+                    try:
+                        self.__save(params)
+
+                    # Abort feed scrape if duplicate found
+                    except DuplicateException, e:
+                        logger.warning(
+                            'Found duplicate item (%s), aborting' % e)
+                        return
+
                 logger.info('Scrape complete for %s' % self.__class__.__name__)
             else:
                 page = 1
@@ -82,12 +94,21 @@ class SiteScraper:
 
                     for item in self._get_items(soup):
                         try:
-                            self._process_item(item)
+                            params = self._process_item(item)
 
                         # Catch all processing errors, skip item
                         except Exception, e:
                             logger.error('Processing error, skipping item')
                             logger.exception(e)
+
+                        try:
+                            self.__save(params)
+
+                        # On URL + site duplicate, abort feed
+                        except DuplicateException, e:
+                            logger.warning(
+                                'Found duplicate item (%s), aborting' % e)
+                            return
 
                     # Commit after each page is processed
                     session.commit()
@@ -101,12 +122,6 @@ class SiteScraper:
                         page += 1
                         logger.debug('%d %s' % (page, link))
 
-        # Abort when dupe found
-        # TODO: scan in reverse order?
-        except DuplicateException, e:
-            logger.warning('Found duplicate item, aborting')
-            logger.exception(e)
-
         # Log any uncaught exceptions
         except Exception, e:
             logger.error('Uncaught error in %s' % self.__class__.__name__)
@@ -115,39 +130,23 @@ class SiteScraper:
         # Commit any stragglers (?)
         session.commit()
 
-    # Save an article
-    def save(self, article):
-        if len(Article.query.filter_by(url=article['url']).all()) == 0:
-            article['time_scraped'] = datetime.datetime.now()
-            article['scraper_type'] = self.__class__.__name__
+    def __save(self, params):
+        params['time_scraped'] = datetime.datetime.now()
+        params['scraper_type'] = self.__class__.__name__
 
-            Article(**article)
-        # else:
-        #     raise DuplicateException(event)
+        query = self.CLS.query.filter_by(
+                url=params['url'], 
+                scraper_type=params['scraper_type'])
 
-    # Save an event
-    def save_event(self, event):
-        if len(Event.query.filter_by(url=event['url']).all()) == 0:
-            event['time_scraped'] = datetime.datetime.now()
-            event['scraper_type'] = self.__class__.__name__
-
-            Event(**event)
-        # else:
-        #     raise DuplicateException(event)
-
-    # Save a publication
-    def save_pub(self, pub):
-        if len(Publication.query.filter_by(url=pub['url']).all()) == 0:
-            pub['time_scraped'] = datetime.datetime.now()
-            pub['scraper_type'] = self.__class__.__name__
-
-            Publication(**pub)
-        # else:
-        #     raise DuplicateException(pub)
+        if query.count() == 0:
+            self.CLS(**params)
+        else:
+            raise DuplicateException(params['url'])
 
 class WBSouthAsia(SiteScraper):
     URL = 'http://www.worldbank.org/en/region/sar/whats-new'
     URL_BASE = 'http://www.worldbank.org'
+    CLS = Article
 
     def _next_link(self, soup):
         rv = None
@@ -177,12 +176,12 @@ class WBSouthAsia(SiteScraper):
         date_text = soupselect.select(article, '.date')[0].text
         date = re.match('Date: (.+)', date_text).groups()[0]
 
-        self.save({
+        return {
             'title': title,
             'url': url,
             'body': body,
             'date': self.get_date(date)
-        })
+        }
 
 class WBEastAsia(WBSouthAsia):
     URL = 'http://www.worldbank.org/en/region/eap/whats-new'
@@ -190,19 +189,25 @@ class WBEastAsia(WBSouthAsia):
 class AsianDevelopmentBank(SiteScraper):
     URL = 'http://feeds.feedburner.com/adb_news'
     RSS = True
+    CLS = Article
 
     def _scrape_rss(self, items):
+        rv = []
+
         for article in items:
-            self.save({
+            rv.append({
                 'title': article['title'],
                 'url': article['feedburner_origlink'],
                 'body': article['summary'],
                 'date': self.get_date(article['published'])
-            })                
+            })
+
+        return rv
 
 class ASEAN(SiteScraper):
     URL = 'http://www.asean.org/news'
     URL_BASE = 'http://www.asean.org'
+    CLS = Article
 
     def _next_link(self, soup):
         return self.URL_BASE + soupselect.select(
@@ -220,17 +225,18 @@ class ASEAN(SiteScraper):
         m = re.search('(\d{2} \w+ \d{4})', rough_date)
         date = self.get_date(m.groups()[0])
 
-        self.save({
+        return {
             'title': title,
             'url': url,
             'body': body,
             'date': date
-        })
+        }
 
 # TODO: broken feed        
 class GlobalDevelopmentNetworkEAsia(SiteScraper):
     URL = 'http://feeds.feedburner.com/gdnet/eastasia'
     RSS = True
+    CLS = Article
 
     def _scrape_rss(self, items):
         for item in items:
@@ -240,10 +246,12 @@ class GlobalDevelopmentNetworkEAsia(SiteScraper):
 class GlobalDevelopmentNetworkSAsia(SiteScraper):
     URL = 'http://feeds.feedburner.com/gdnet/southasia'
     RSS = True
+    CLS = Article
 
 class UNESCAP(SiteScraper):
     URL = 'http://www.unescap.org/media-centre/feature-stories'
     URL_BASE = 'http://www.unescap.org'
+    CLS = Article
 
     def _get_items(self, soup):
         return soupselect.select(soup, 'div.view-mode-feature_story .group-right')
@@ -255,34 +263,40 @@ class UNESCAP(SiteScraper):
             item, '.date-display-single')[0].text)
         body = soupselect.select(item, '.field-name-body p')[0].text
 
-        self.save({
+        return {
             'title': title,
             'url': url,
             'body': body,
             'date': date
-        })
+        }
 
 class FAOAsia(SiteScraper):
     URL = 'http://www.fao.org/asiapacific/rap/home/news/rss/en/?type=334'
     RSS = True
+    CLS = Article
 
     def _scrape_rss(self, items):
+        rv = []
+
         for item in items:
             title = item['title']
             url = item['guid']
             date = item['published_parsed']
             body = item['summary']
 
-            self.save({
+            rv.append({
                 'title': title,
                 'url': url,
                 'body': body,
                 'date': self.get_date(date)
             })
 
+        return rv
+
 class SEARCA(SiteScraper):
     URL = 'http://www.searca.org/index.php/news'
     URL_BASE = 'http://www.searca.org'
+    CLS = Article
 
     def _next_link(self, soup):
         return self.URL_BASE + soupselect.select(
@@ -306,12 +320,12 @@ class SEARCA(SiteScraper):
         # Articles have no published date
         date = datetime.datetime.now()
 
-        self.save({
+        return {
             'title': title,
             'url': url,
             'body': body,
             'date': date
-        })
+        }
 
 # TODO: ask about content            
 class TDRI(SiteScraper):
@@ -320,15 +334,20 @@ class TDRI(SiteScraper):
 class CACAARI(SiteScraper):
     URL = 'http://www.cacaari.org/news/rss'
     RSS = True
+    CLS = Article
 
     def _scrape_rss(self, items):
+        rv = []
+
         for item in items:
-            self.save({
+            rv.append({
                 'title': item['title'],
                 'url': item['guid'],
                 'date': self.get_date(item['published_parsed']),
                 'body': item['summary']
-            })                
+            })
+
+        return rv
 
 # TODO: can't load site
 class VCIEP(SiteScraper):
@@ -338,19 +357,25 @@ class VCIEP(SiteScraper):
 class APARRIEventScraper(SiteScraper):
     URL = 'http://www.apaari.org/events/feed/'
     RSS = True
+    CLS = Event
 
     def _scrape_rss(self, items):
+        rv = []
+
         for item in items:
-            self.save_event({
+            rv.append({
                 'title': item['title'],
                 'url': item['link'],
                 'date': self.get_date(item['published_parsed']),
                 'body': item['summary']
             })
 
+        return rv
+
 class UNESCAPEventScraper(SiteScraper):
     URL = 'http://www.unescap.org/events/upcoming'
     URL_BASE = 'http://www.unescap.org'
+    CLS = Event
 
     def _next_link(self, soup):
         return self.URL_BASE + soupselect.select(
@@ -390,26 +415,31 @@ class UNESCAPEventScraper(SiteScraper):
 
         body = event_type + event_loc
 
-        self.save_event({
+        return {
             'title': title,
             'url': url,
             'start_time': start_time,
             'end_time': end_time,
             'body': body
-        })
+        }
 
 class WBSouthAsiaPubScraper(SiteScraper):
     URL = 'http://wbws.worldbank.org/feeds/xml/sar_all.xml'
     RSS = True
+    CLS = Publication
 
     def _scrape_rss(self, items):
+        rv = []
+
         for item in items:
-            self.save_pub({
+            rv.append({
                 'title': item['title'],
                 'url': item['link'],
                 'date': self.get_date(item['published_parsed']),
                 'body': item['summary']
             })
+
+        return rv
 
 class WBEastAsiaPubScraper(WBSouthAsiaPubScraper):
     URL = 'http://wbws.worldbank.org/feeds/xml/eap_all.xml'
@@ -417,6 +447,7 @@ class WBEastAsiaPubScraper(WBSouthAsiaPubScraper):
 class ADBAgriculturePubScraper(SiteScraper):
     URL = 'http://www.adb.org/publications/search/448'
     URL_BASE = 'http://www.adb.org'
+    CLS = Publication
 
     def _next_link(self, soup):
         return self.URL_BASE + soupselect.select(
@@ -431,12 +462,12 @@ class ADBAgriculturePubScraper(SiteScraper):
         date = self.get_date(soupselect.select(item, 'span.date-display-single')[0].text)
         body = soupselect.select(item, 'div.views-field-nothing-1 p')[0].text
 
-        self.save_pub({
+        return {
             'title': title,
             'url': url,
             'date': date,
             'body': body
-        })
+        }
 
 class ADBPovertyPubScraper(ADBAgriculturePubScraper):
     URL = 'http://www.adb.org/publications/search/211'
@@ -444,30 +475,4 @@ class ADBPovertyPubScraper(ADBAgriculturePubScraper):
 class UNESCAPPubScraper(SiteScraper):
     URL = 'http://www.unescap.org/publications'
     URL_BASE = 'http://www.unescap.org'
-
-if __name__ == '__main__':
-    scrapers = [
-
-        # Articles
-        'WBSouthAsia',
-        'WBEastAsia',
-        'AsianDevelopmentBank',
-        'ASEAN',
-        'UNESCAP',
-        'FAOAsia',
-        'SEARCA',
-        'CACAARI',
-
-        # Events
-        'APARRIEventScraper',
-        'UNESCAPEventScraper',
-
-        # Pubs
-        'WBSouthAsiaPubScraper',
-        'WBEastAsiaPubScraper',
-        'ADBAgriculturePubScraper',
-        'ADBPovertyPubScraper'
-    ]
-
-    for s in scrapers:
-        globals()[s]().scrape()        
+    CLS = Publication
