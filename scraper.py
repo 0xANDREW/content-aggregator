@@ -146,15 +146,20 @@ class SiteScraper:
         session.commit()
 
     def __save(self, params):
-        if 'date' not in params:
-            logger.error('Date missing from %s' % params['url'])
-            return
 
-        if params['date'] <= self.START_DATE:
-            raise DateLimitException(params['date'])
+        if self.CLS in (Article, Publication):
+            if 'date' not in params:
+                logger.error('Date missing from %s' % params['url'])
+                return
+
+            if params['date'] <= self.START_DATE:
+                raise DateLimitException(params['date'])
 
         params['time_scraped'] = datetime.datetime.now()
         params['scraper_type'] = self.__class__.__name__
+
+        # Always convert body to unicode
+        params['body'] = unicode(params['body'])
 
         query = self.CLS.query.filter_by(
                 url=params['url'], 
@@ -185,15 +190,20 @@ class WBSouthAsia(SiteScraper):
     def _process_item(self, article):
         title = article.find('h6').text.strip()
         url = article.find('h6').find('a')['href']
-        desc = soupselect.select(article, 'div.description p')
+        desc = article.find('div', class_='description')
         body = ''
 
-        if len(desc) > 0:
-            desc = desc[0]
-            body = desc.contents[0]
+        # Remove JavaScript from body
+        if desc:
+            toggle = desc.find('span', id='summary_1')
 
-            if len(desc.contents) > 1:
-                body += desc.contents[3].contents[0]
+            if toggle:
+                toggle.decompose()
+
+            detail = desc.find('span', id='detail_1')
+
+            if detail:
+                detail.a.decompose()
 
         date_text = soupselect.select(article, '.date')[0].text
         date = re.match('Date: (.+)', date_text).groups()[0]
@@ -201,7 +211,7 @@ class WBSouthAsia(SiteScraper):
         return {
             'title': title,
             'url': url,
-            'body': body,
+            'body': desc if desc else body,
             'date': self.get_date(date)
         }
 
@@ -242,7 +252,7 @@ class ASEAN(SiteScraper):
         title = item.find('h1').text
         url = self.URL_BASE + item.find('h1').find('a')['href']
         rough_date = item.find('p').text
-        body = unicode(soupselect.select(item, 'div.pos-content')[0])
+        body = item.find('div', class_='floatbox')
 
         m = re.search('(\d{2} \w+ \d{4})', rough_date)
         date = self.get_date(m.groups()[0])
@@ -253,22 +263,6 @@ class ASEAN(SiteScraper):
             'body': body,
             'date': date
         }
-
-# TODO: broken feed        
-class GlobalDevelopmentNetworkEAsia(SiteScraper):
-    URL = 'http://feeds.feedburner.com/gdnet/eastasia'
-    RSS = True
-    CLS = Article
-
-    def _scrape_rss(self, items):
-        for item in items:
-            print a
-
-# TODO: broken feed            
-class GlobalDevelopmentNetworkSAsia(SiteScraper):
-    URL = 'http://feeds.feedburner.com/gdnet/southasia'
-    RSS = True
-    CLS = Article
 
 class UNESCAP(SiteScraper):
     URL = 'http://www.unescap.org/media-centre/feature-stories'
@@ -283,7 +277,7 @@ class UNESCAP(SiteScraper):
         url = self.URL_BASE + item.find('h2').find('a')['href']
         date = self.get_date(soupselect.select(
             item, '.date-display-single')[0].text)
-        body = soupselect.select(item, '.field-name-body p')[0].text
+        body = item.find('div', class_='field-name-body')
 
         return {
             'title': title,
@@ -349,10 +343,6 @@ class SEARCA(SiteScraper):
             'date': date
         }
 
-# TODO: ask about content            
-class TDRI(SiteScraper):
-    pass
-
 class CACAARI(SiteScraper):
     URL = 'http://www.cacaari.org/news/rss'
     RSS = True
@@ -370,10 +360,6 @@ class CACAARI(SiteScraper):
             })
 
         return rv
-
-# TODO: can't load site
-class VCIEP(SiteScraper):
-    pass
 
 # RSS doesn't actually include parseable event dates
 class APARRIEventScraper(SiteScraper):
@@ -482,7 +468,7 @@ class ADBAgriculturePubScraper(SiteScraper):
         title = item.find('h3').find('a').text
         url = item.find('h3').find('a')['href']
         date = self.get_date(soupselect.select(item, 'span.date-display-single')[0].text)
-        body = soupselect.select(item, 'div.views-field-nothing-1 p')[0].text
+        body = soupselect.select(item, 'div.views-field-nothing-1 p')[0]
 
         return {
             'title': title,
@@ -498,3 +484,8 @@ class UNESCAPPubScraper(SiteScraper):
     URL = 'http://www.unescap.org/publications'
     URL_BASE = 'http://www.unescap.org'
     CLS = Publication
+
+if __name__ == '__main__':
+    s = UNESCAP()
+    s.scrape()
+    
