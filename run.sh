@@ -20,5 +20,4 @@ else
     pip install -r requirements.txt
 fi
 
-python ./feeder.py --no-scrape scrapers.txt
-
+python ./feeder.py scrapers.txt "$@"
