@@ -31,9 +31,13 @@ class DuplicateException(Exception):
 class ProcessingError(Exception):
     pass
 
+class DateLimitException(Exception):
+    pass
+
 # Generic scraper class
 class SiteScraper:
     RSS = False
+    START_DATE = datetime.datetime(2010, 1, 1)
 
     # Base implementation always returns None
     def _next_link(self, soup):
@@ -75,6 +79,12 @@ class SiteScraper:
                             'Found duplicate item (%s), aborting' % e)
                         return
 
+                    # Abort feed scrape if start date passed
+                    except DateLimitException, e:
+                        logger.warning(
+                            'Date limit passed (%s), aborting' % e)
+                        return
+
                 logger.info('Scrape complete for %s' % self.__class__.__name__)
             else:
                 page = 1
@@ -104,10 +114,14 @@ class SiteScraper:
                         try:
                             self.__save(params)
 
-                        # On URL + site duplicate, abort feed
                         except DuplicateException, e:
                             logger.warning(
                                 'Found duplicate item (%s), aborting' % e)
+                            return
+
+                        except DateLimitException, e:
+                            logger.warning(
+                                'Date limit passed (%s), aborting' % e)
                             return
 
                     # Commit after each page is processed
@@ -131,6 +145,9 @@ class SiteScraper:
         session.commit()
 
     def __save(self, params):
+        if params['date'] <= self.START_DATE:
+            raise DateLimitException(params['date'])
+
         params['time_scraped'] = datetime.datetime.now()
         params['scraper_type'] = self.__class__.__name__
 
