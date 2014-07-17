@@ -34,6 +34,14 @@
 <li>Create user <code>feed</code> with <code>developer</code> role</li>
 </ol>
 
+<h3>Notes</h3>
+
+<ul>
+<li>All uploaded items are unpublished by default</li>
+<li>Date limit is January 1, 2010</li>
+<li>Once a dupliacte item is detected, the scrape for that feed is aborted</li>
+</ul>
+
 <h2>Running the Aggregator</h2>
 
 <h3>Requirements</h3>
@@ -51,6 +59,15 @@
 <li>Save as <code>drupal.env</code></li>
 <li>Execute <code>run.sh</code> from the project root</li>
 </ol>
+
+<h3>Command-line Options (to <code>run.sh</code>)</h3>
+
+<ul>
+<li><code>--no-scrape</code>: skip content scraping</li>
+<li><code>--no-post</code>: skip content upload</li>
+<li><code>--post-limit N</code>: only upload the first N items to Drupal</li>
+<li><code>--debug</code>: show debug info</li>
+</ul>
 
 <h3>Notes</h3>
 

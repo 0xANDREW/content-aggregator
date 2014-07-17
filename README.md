@@ -24,6 +24,11 @@ Drupal Instance Preparation
     2. Request parsing: `application/json` only
 6. Create user `feed` with `developer` role
 
+### Notes
+* All uploaded items are unpublished by default
+* Date limit is January 1, 2010
+* Once a dupliacte item is detected, the scrape for that feed is aborted
+
 Running the Aggregator
 ----------------------
 
@@ -37,6 +42,13 @@ Running the Aggregator
 2. Save as `drupal.env`
 3. Execute `run.sh` from the project root
 
+### Command-line Options (to `run.sh`)
+* `--no-scrape`: skip content scraping
+* `--no-post`: skip content upload
+* `--post-limit N`: only upload the first N items to Drupal
+* `--debug`: show debug info
+
 ### Notes
 * The scraping process takes 1-2 hours to run the first time. Subsequent runs take much less time since the process aborts the feed as soon as it finds a duplicate URL. The time required to post all the items to Drupal depends on the number of items scraped.
 * If it's going to be a `cron` job, ensure that `run.sh` is run from the project root.
+  
