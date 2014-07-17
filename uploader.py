@@ -76,7 +76,8 @@ class DrupalPoster:
         data = {
             'title': thing.title[:self.MAX_TITLE_LEN],
             'type': node_type,
-            'body': self.__body(thing.body, thing.date, thing.url)
+            'body': self.__body(thing.body, thing.date, thing.url),
+            'status': None
         }
 
         # Custom structure required for custom fields
