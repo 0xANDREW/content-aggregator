@@ -25,7 +25,7 @@ else
     source "$ENV_NAME/bin/activate"
     pip install -r requirements.txt
 
-    `python --version | grep "2.6"`
+    `python --version 2>&1 | grep 2.6`
 
     # If using Python < 2.7, install argparse module
     if [ $? -eq 0 ]; then
