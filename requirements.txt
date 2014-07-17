@@ -4,3 +4,4 @@ requests
 https://github.com/syabro/soupselect/archive/master.zip
 python-dateutil
 sqlalchemy
+argparse

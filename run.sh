@@ -24,13 +24,6 @@ else
     $VENV_PATH $ENV_NAME
     source "$ENV_NAME/bin/activate"
     pip install -r requirements.txt
-
-    `python --version 2>&1 | grep 2.6`
-
-    # If using Python < 2.7, install argparse module
-    if [ $? -eq 0 ]; then
-        pip install argparse
-    fi
 fi
 
 python ./feeder.py scrapers.txt "$@"
