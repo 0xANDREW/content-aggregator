@@ -6,6 +6,9 @@ from elixir import *
 metadata.bind = 'sqlite:///db/resakss.sqlite'
 # metadata.bind.echo = True
 
+def change_db(db):
+    metadata.bind = 'sqlite:///%s' % db
+
 class DrupalBase:
     @classmethod
     def pending_post(cls):

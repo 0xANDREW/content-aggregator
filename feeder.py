@@ -54,12 +54,17 @@ if __name__ == '__main__':
     parser.add_argument('--no-post', action='store_true')
     parser.add_argument('--post-limit', type=int)
     parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--db')
     args = parser.parse_args()
 
     if args.debug:
         MODULE_LOG_LEVEL = logging.DEBUG
 
     setup_loggers()
+
+    if args.db:
+        change_db(args.db)
+        
     setup_elixir()
 
     if not args.no_scrape:

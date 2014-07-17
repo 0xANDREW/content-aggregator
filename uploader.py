@@ -31,7 +31,7 @@ class DrupalPoster:
     Originally published on %s. Please click the following URL for more info: %s
     """
 
-    MAX_TITLE_LEN = 100
+    MAX_TITLE_LEN = 220
     DATE_FMT = '%Y-%m-%d'
     PUB_TYPE = '608'
 

@@ -39,7 +39,7 @@
 <ul>
 <li>All uploaded items are unpublished by default</li>
 <li>Date limit is January 1, 2010</li>
-<li>Once a dupliacte item is detected, the scrape for that feed is aborted</li>
+<li>Once a duplicate item is detected, the scrape for that feed is aborted</li>
 </ul>
 
 <h2>Running the Aggregator</h2>
@@ -47,8 +47,9 @@
 <h3>Requirements</h3>
 
 <ul>
-<li>Python 2.7</li>
-<li><code>virtualenv</code> library for Python</li>
+<li>Python 2.6</li>
+<li><code>argparse</code> Python library</li>
+<li><code>virtualenv</code> Python library</li>
 <li><code>sqlite3</code> system library</li>
 </ul>
 
@@ -67,6 +68,7 @@
 <li><code>--no-post</code>: skip content upload</li>
 <li><code>--post-limit N</code>: only upload the first N items to Drupal</li>
 <li><code>--debug</code>: show debug info</li>
+<li><code>--db</code>: specify database file (default: <code>db/resakss.sqlite</code>)</li>
 </ul>
 
 <h3>Notes</h3>

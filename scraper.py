@@ -136,15 +136,20 @@ class SiteScraper:
                         page += 1
                         logger.debug('%d %s' % (page, link))
 
-        # Log any uncaught exceptions
+        # Log any uncaught exceptions (network errors)
         except Exception, e:
-            logger.error('Uncaught error in %s' % self.__class__.__name__)
+            logger.error('Uncaught error in %s (network error?)' % 
+                         self.__class__.__name__)
             logger.exception(e)
 
         # Commit any stragglers (?)
         session.commit()
 
     def __save(self, params):
+        if 'date' not in params:
+            logger.error('Date missing from %s' % params['url'])
+            return
+
         if params['date'] <= self.START_DATE:
             raise DateLimitException(params['date'])
 

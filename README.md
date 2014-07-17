@@ -27,14 +27,15 @@ Drupal Instance Preparation
 ### Notes
 * All uploaded items are unpublished by default
 * Date limit is January 1, 2010
-* Once a dupliacte item is detected, the scrape for that feed is aborted
+* Once a duplicate item is detected, the scrape for that feed is aborted
 
 Running the Aggregator
 ----------------------
 
 ### Requirements
-* Python 2.7
-* `virtualenv` library for Python
+* Python 2.6
+* `argparse` Python library
+* `virtualenv` Python library
 * `sqlite3` system library
 
 ### Steps  
@@ -47,6 +48,7 @@ Running the Aggregator
 * `--no-post`: skip content upload
 * `--post-limit N`: only upload the first N items to Drupal
 * `--debug`: show debug info
+* `--db`: specify database file (default: `db/resakss.sqlite`)
 
 ### Notes
 * The scraping process takes 1-2 hours to run the first time. Subsequent runs take much less time since the process aborts the feed as soon as it finds a duplicate URL. The time required to post all the items to Drupal depends on the number of items scraped.
