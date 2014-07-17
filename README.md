@@ -24,17 +24,11 @@ Drupal Instance Preparation
     2. Request parsing: `application/json` only
 6. Create user `feed` with `developer` role
 
-### Notes
-* All uploaded items are unpublished by default
-* Date limit is January 1, 2010
-* Once a duplicate item is detected, the scrape for that feed is aborted
-
 Running the Aggregator
 ----------------------
 
 ### Requirements
-* Python 2.6
-* `argparse` Python library
+* Python >= 2.6
 * `virtualenv` Python library
 * `sqlite3` system library
 
@@ -50,7 +44,11 @@ Running the Aggregator
 * `--debug`: show debug info
 * `--db`: specify database file (default: `db/resakss.sqlite`)
 
-### Notes
+Notes
+-----  
 * The scraping process takes 1-2 hours to run the first time. Subsequent runs take much less time since the process aborts the feed as soon as it finds a duplicate URL. The time required to post all the items to Drupal depends on the number of items scraped.
+* All uploaded items are unpublished by default.
+* Date limit is January 1, 2010.
+* Once a duplicate item is detected, the scrape for that feed is aborted.
 * If it's going to be a `cron` job, ensure that `run.sh` is run from the project root.
   

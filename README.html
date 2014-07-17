@@ -34,21 +34,12 @@
 <li>Create user <code>feed</code> with <code>developer</code> role</li>
 </ol>
 
-<h3>Notes</h3>
-
-<ul>
-<li>All uploaded items are unpublished by default</li>
-<li>Date limit is January 1, 2010</li>
-<li>Once a duplicate item is detected, the scrape for that feed is aborted</li>
-</ul>
-
 <h2>Running the Aggregator</h2>
 
 <h3>Requirements</h3>
 
 <ul>
-<li>Python 2.6</li>
-<li><code>argparse</code> Python library</li>
+<li>Python >= 2.6</li>
 <li><code>virtualenv</code> Python library</li>
 <li><code>sqlite3</code> system library</li>
 </ul>
@@ -71,9 +62,12 @@
 <li><code>--db</code>: specify database file (default: <code>db/resakss.sqlite</code>)</li>
 </ul>
 
-<h3>Notes</h3>
+<h2>Notes</h2>
 
 <ul>
 <li>The scraping process takes 1-2 hours to run the first time. Subsequent runs take much less time since the process aborts the feed as soon as it finds a duplicate URL. The time required to post all the items to Drupal depends on the number of items scraped.</li>
+<li>All uploaded items are unpublished by default.</li>
+<li>Date limit is January 1, 2010.</li>
+<li>Once a duplicate item is detected, the scrape for that feed is aborted.</li>
 <li>If it's going to be a <code>cron</code> job, ensure that <code>run.sh</code> is run from the project root.</li>
 </ul>
