@@ -32,7 +32,7 @@ class DrupalPoster:
     """
 
     MAX_TITLE_LEN = 220
-    DATE_FMT = '%Y-%m-%d'
+    DATE_FMT = '%m/%d/%Y'
     PUB_TYPE = '608'
 
     def __init__(self):
@@ -91,6 +91,19 @@ class DrupalPoster:
                     'und': [{ 
                         'value': { 
                             'date': thing.date.strftime('%Y')
+                        }
+                    }]
+                }
+
+        elif node_type == 'event':
+            if thing.start_time:
+                data['field_event_date'] = {
+                    'und': [{ 
+                        'value': { 
+                            'date': thing.start_time.strftime(self.DATE_FMT)
+                        },
+                        'value2': {
+                            'date': thing.end_time.strftime(self.DATE_FMT) if thing.end_time else None
                         }
                     }]
                 }
