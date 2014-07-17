@@ -55,6 +55,7 @@ if __name__ == '__main__':
     parser.add_argument('--post-limit', type=int)
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--db')
+    parser.add_argument('--events-only', action='store_true')
     args = parser.parse_args()
 
     if args.debug:
@@ -87,7 +88,12 @@ if __name__ == '__main__':
             logger.error('Login error, exiting')
             sys.exit(1)
 
-        for cls in [ Article, Event, Publication ]:
+        classes = [ Article, Event, Publication ]
+
+        if args.events_only:
+            classes = [ Event ]
+
+        for cls in classes:
             things = cls.pending_post()            
 
             if len(things) == 0:
