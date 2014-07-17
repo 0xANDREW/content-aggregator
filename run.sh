@@ -4,6 +4,12 @@ ENV_FILE=drupal.env
 ENV_NAME=agg_env
 VENV_PATH=/usr/bin/virtualenv2
 
+# For systems where Python 2.x is default,
+# adjust path
+if [ ! -e "$VENV_PATH" ]; then
+    VENV_PATH=/usr/bin/virtualenv
+fi
+
 # Source environment file
 if [ -e "$ENV_FILE" ]; then
     source "$ENV_FILE"
@@ -18,6 +24,13 @@ else
     $VENV_PATH $ENV_NAME
     source "$ENV_NAME/bin/activate"
     pip install -r requirements.txt
+
+    `python --version | grep "2.6"`
+
+    # If using Python < 2.7, install argparse module
+    if [ $? -eq 0 ]; then
+        pip install argparse
+    fi
 fi
 
 python ./feeder.py scrapers.txt "$@"
