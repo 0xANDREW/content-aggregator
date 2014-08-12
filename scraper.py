@@ -37,7 +37,7 @@ class DateLimitException(Exception):
 # Generic scraper class
 class SiteScraper:
     RSS = False
-    START_DATE = datetime.datetime(2010, 1, 1)
+    START_DATE = datetime.datetime(2014, 1, 1)
 
     # Base implementation always returns None
     def _next_link(self, soup):
@@ -435,6 +435,7 @@ class WBSouthAsiaPubScraper(SiteScraper):
     URL = 'http://wbws.worldbank.org/feeds/xml/sar_all.xml'
     RSS = True
     CLS = Publication
+    START_DATE = datetime.datetime(2010, 1, 1)
 
     def _scrape_rss(self, items):
         rv = []
@@ -456,6 +457,7 @@ class ADBAgriculturePubScraper(SiteScraper):
     URL = 'http://www.adb.org/publications/search/448'
     URL_BASE = 'http://www.adb.org'
     CLS = Publication
+    START_DATE = datetime.datetime(2010, 1, 1)
 
     def _next_link(self, soup):
         return self.URL_BASE + soupselect.select(
@@ -484,6 +486,7 @@ class UNESCAPPubScraper(SiteScraper):
     URL = 'http://www.unescap.org/publications'
     URL_BASE = 'http://www.unescap.org'
     CLS = Publication
+    START_DATE = datetime.datetime(2010, 1, 1)
 
 if __name__ == '__main__':
     s = UNESCAP()

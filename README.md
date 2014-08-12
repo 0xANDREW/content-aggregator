@@ -43,12 +43,15 @@ Running the Aggregator
 * `--post-limit N`: only upload the first N items to Drupal
 * `--debug`: show debug info
 * `--db`: specify database file (default: `db/resakss.sqlite`)
+* `--kill-db`: delete database before start
+* `--events-only`: only post events to Drupal
+* `--show-pending`: print number of pending things
 
 Notes
 -----  
 * The scraping process takes 1-2 hours to run the first time. Subsequent runs take much less time since the process aborts the feed as soon as it finds a duplicate URL. The time required to post all the items to Drupal depends on the number of items scraped.
 * All uploaded items are unpublished by default.
-* Date limit is January 1, 2010.
+* Date limit for articles is January 1, 2014 and January 1, 2010 for events and publications.
 * Once a duplicate item is detected, the scrape for that feed is aborted.
 * If it's going to be a `cron` job, ensure that `run.sh` is run from the project root.
   

@@ -50,7 +50,7 @@ class DrupalPoster:
         return '%s/%s' % (self.__base, path)
 
     def __login(self):
-        logger.info('Logging in to Drupal...')
+        logger.info('Logging in to Drupal (%s)...' % self.__base)
 
         data = { 'username': self.__user, 'password': self.__pass }
 
@@ -97,13 +97,16 @@ class DrupalPoster:
 
         elif node_type == 'event':
             if thing.start_time:
+                value = thing.start_time.strftime(self.DATE_FMT)
+                value2 = thing.end_time.strftime(self.DATE_FMT) if thing.end_time else None
+
                 data['field_event_date'] = {
                     'und': [{ 
                         'value': { 
-                            'date': thing.start_time.strftime(self.DATE_FMT)
+                            'date': value
                         },
                         'value2': {
-                            'date': thing.end_time.strftime(self.DATE_FMT) if thing.end_time else None
+                            'date': value2
                         }
                     }]
                 }

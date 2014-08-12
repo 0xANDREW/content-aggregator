@@ -1,6 +1,7 @@
 import sys
 import argparse
 import logging
+import os
 
 import scraper
 import uploader
@@ -54,8 +55,10 @@ if __name__ == '__main__':
     parser.add_argument('--no-post', action='store_true')
     parser.add_argument('--post-limit', type=int)
     parser.add_argument('--debug', action='store_true')
-    parser.add_argument('--db')
+    parser.add_argument('--db', default='db/resakss.sqlite')
+    parser.add_argument('--kill-db', action='store_true')
     parser.add_argument('--events-only', action='store_true')
+    parser.add_argument('--show-pending', action='store_true')
     args = parser.parse_args()
 
     if args.debug:
@@ -63,10 +66,20 @@ if __name__ == '__main__':
 
     setup_loggers()
 
-    if args.db:
-        change_db(args.db)
-        
+    if args.kill_db:
+        try:
+            os.unlink(args.db)
+        except:
+            logger.warning('Database %s does not exist' % args.db)
+
+    change_db(args.db)        
     setup_elixir()
+
+    if args.show_pending:
+        for cls in [ Article, Event, Publication ]:
+            print '%s: %d' % (cls.__name__, len(cls.pending_post()))
+
+        sys.exit()
 
     if not args.no_scrape:
         with open(args.scrapers) as f:
@@ -78,7 +91,6 @@ if __name__ == '__main__':
         logger.info('Skipping scrape')
 
     if not args.no_post:
-
         if args.post_limit:
             logger.info('Post limit: %d' % args.post_limit)
 

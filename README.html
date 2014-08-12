@@ -60,6 +60,9 @@
 <li><code>--post-limit N</code>: only upload the first N items to Drupal</li>
 <li><code>--debug</code>: show debug info</li>
 <li><code>--db</code>: specify database file (default: <code>db/resakss.sqlite</code>)</li>
+<li><code>--kill-db</code>: delete database before start</li>
+<li><code>--events-only</code>: only post events to Drupal</li>
+<li><code>--show-pending</code>: print number of pending things</li>
 </ul>
 
 <h2>Notes</h2>
@@ -67,7 +70,7 @@
 <ul>
 <li>The scraping process takes 1-2 hours to run the first time. Subsequent runs take much less time since the process aborts the feed as soon as it finds a duplicate URL. The time required to post all the items to Drupal depends on the number of items scraped.</li>
 <li>All uploaded items are unpublished by default.</li>
-<li>Date limit is January 1, 2010.</li>
+<li>Date limit for articles is January 1, 2014 and January 1, 2010 for events and publications.</li>
 <li>Once a duplicate item is detected, the scrape for that feed is aborted.</li>
 <li>If it's going to be a <code>cron</code> job, ensure that <code>run.sh</code> is run from the project root.</li>
 </ul>

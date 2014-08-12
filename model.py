@@ -3,7 +3,7 @@ import sys
 sys.path.append('elixir')
 from elixir import *
 
-metadata.bind = 'sqlite:///db/resakss.sqlite'
+# metadata.bind = 'sqlite:///db/resakss.sqlite'
 # metadata.bind.echo = True
 
 def change_db(db):
