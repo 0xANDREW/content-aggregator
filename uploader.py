@@ -1,3 +1,4 @@
+import time
 import os
 import json
 import datetime
@@ -34,6 +35,9 @@ class DrupalPoster:
     MAX_TITLE_LEN = 220
     DATE_FMT = '%m/%d/%Y'
     PUB_TYPE = '608'
+    REQ_TIMEOUT = 120
+    REQ_DELAY = 5
+    MAX_TRIES = 10
 
     def __init__(self):
         self.__base = os.environ['DRUPAL_BASE']
@@ -43,19 +47,44 @@ class DrupalPoster:
         self.__login_path = os.environ['DRUPAL_LOGIN_PATH']
 
         self.__headers = { 'content-type' : 'application/json' }
+        self.__cookies = {}
 
         self.__login()
 
     def __url(self, path):
         return '%s/%s' % (self.__base, path)
 
+    def __request(self, path, data):
+        tries = 0
+
+        # Retry POST request N times
+        while 1:
+            if tries == self.MAX_TRIES:
+                raise Exception()
+            else:
+                try:
+                    r = requests.post(self.__url(path), 
+                                      data=json.dumps(data), 
+                                      headers=self.__headers,
+                                      cookies=self.__cookies,
+                                      timeout=self.REQ_TIMEOUT
+                    )
+
+                    return r
+                except:
+                    tries += 1
+                    
+                    logger.debug('Request failed (%d/%d), retrying...' 
+                                 % (tries, self.MAX_TRIES))
+
+                    time.sleep(self.REQ_DELAY)        
+
     def __login(self):
         logger.info('Logging in to Drupal (%s)...' % self.__base)
 
         data = { 'username': self.__user, 'password': self.__pass }
 
-        r = requests.post(self.__url(self.__login_path), 
-                          data=json.dumps(data), headers=self.__headers)
+        r = self.__request(self.__login_path, data)
 
         self.__cookies = { r.json()['session_name']: r.json()['sessid'] }
         self.__headers['x-csrf-token'] = r.json()['token']
@@ -111,12 +140,7 @@ class DrupalPoster:
                     }]
                 }
 
-        r = requests.post(
-            self.__url(self.__node_path),
-            data=json.dumps(data),
-            headers=self.__headers,
-            cookies=self.__cookies
-        )
+        r = self.__request(self.__node_path, data)
 
         if r.status_code == requests.codes.ok:
             thing.time_posted = datetime.datetime.now()

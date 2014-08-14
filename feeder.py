@@ -59,6 +59,7 @@ if __name__ == '__main__':
     parser.add_argument('--kill-db', action='store_true')
     parser.add_argument('--events-only', action='store_true')
     parser.add_argument('--show-pending', action='store_true')
+    parser.add_argument('--set-all-pending', action='store_true')
     args = parser.parse_args()
 
     if args.debug:
@@ -72,8 +73,17 @@ if __name__ == '__main__':
         except:
             logger.warning('Database %s does not exist' % args.db)
 
+    logger.info('Using DB %s' % args.db)
+
     change_db(args.db)        
     setup_elixir()
+
+    if args.set_all_pending:
+        for cls in [ Article, Event, Publication ]:
+            cls.set_all_pending()
+
+        logger.info('Set all things pending')
+        sys.exit()
 
     if args.show_pending:
         for cls in [ Article, Event, Publication ]:
