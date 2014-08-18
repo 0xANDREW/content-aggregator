@@ -60,6 +60,7 @@ class DrupalPoster:
         # Retry POST request N times
         while 1:
             if tries == self.MAX_TRIES:
+                logger.error('Max request attempts exceeded')
                 raise Exception()
             else:
                 try:
@@ -74,7 +75,7 @@ class DrupalPoster:
                 except:
                     tries += 1
                     
-                    logger.debug('Request failed (%d/%d), retrying...' 
+                    logger.warning('Request failed (%d/%d), retrying...' 
                                  % (tries, self.MAX_TRIES))
 
                     time.sleep(self.REQ_DELAY)        
