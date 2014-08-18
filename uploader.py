@@ -36,7 +36,7 @@ class DrupalPoster:
     DATE_FMT = '%m/%d/%Y'
     PUB_TYPE = '608'
     REQ_TIMEOUT = 120
-    REQ_DELAY = 5
+    REQ_DELAY = 60
     MAX_TRIES = 10
 
     def __init__(self):
@@ -72,9 +72,10 @@ class DrupalPoster:
                     )
 
                     return r
-                except:
+                except Exception, e:
                     tries += 1
-                    
+
+                    logger.exception(e)
                     logger.warning('Request failed (%d/%d), retrying...' 
                                  % (tries, self.MAX_TRIES))
 
