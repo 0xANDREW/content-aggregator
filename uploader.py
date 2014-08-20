@@ -41,6 +41,7 @@ class DrupalPoster:
 
     def __init__(self):
         self.__base = os.environ['DRUPAL_BASE']
+        self.__api_path = os.environ['DRUPAL_API_PATH']
         self.__user = os.environ['DRUPAL_USER']
         self.__pass = os.environ['DRUPAL_PASS']
         self.__node_path = os.environ['DRUPAL_NODE_PATH']
@@ -49,10 +50,11 @@ class DrupalPoster:
         self.__headers = { 'content-type' : 'application/json' }
         self.__cookies = {}
 
+        self.__visit_home()
         self.__login()
 
     def __url(self, path):
-        return '%s/%s' % (self.__base, path)
+        return '%s/%s/%s' % (self.__base, self.__api_path, path)
 
     def __request(self, path, data):
         tries = 0
@@ -71,6 +73,8 @@ class DrupalPoster:
                                       timeout=self.REQ_TIMEOUT
                     )
 
+                    r.raise_for_status()
+
                     return r
                 except Exception, e:
                     tries += 1
@@ -80,6 +84,14 @@ class DrupalPoster:
                                  % (tries, self.MAX_TRIES))
 
                     time.sleep(self.REQ_DELAY)        
+
+    def __visit_home(self):
+        logger.debug('Visting home page (%s)...' % self.__base)
+
+        try:
+            requests.get(self.__base, timeout=self.REQ_TIMEOUT)
+        except Exception, e:
+            logging.warning(e)
 
     def __login(self):
         logger.info('Logging in to Drupal (%s)...' % self.__base)

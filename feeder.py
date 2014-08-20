@@ -107,6 +107,7 @@ if __name__ == '__main__':
         try:
             d = uploader.DrupalPoster()
         except Exception, e:
+            logger.exception(e)
             logger.error('Login error, exiting')
             sys.exit(1)
 
