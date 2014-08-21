@@ -56,42 +56,56 @@ class DrupalPoster:
     def __url(self, path):
         return '%s/%s/%s' % (self.__base, self.__api_path, path)
 
-    def __request(self, path, data):
+    def __request(self, path='', data={}, method='post'):
         tries = 0
 
         # Retry POST request N times
         while 1:
-            if tries == self.MAX_TRIES:
-                logger.error('Max request attempts exceeded')
-                raise Exception()
-            else:
-                try:
+            try:
+                if method == 'get':
+                    r = requests.get(self.__base, timeout=self.REQ_TIMEOUT)
+                else:
                     r = requests.post(self.__url(path), 
                                       data=json.dumps(data), 
                                       headers=self.__headers,
                                       cookies=self.__cookies,
                                       timeout=self.REQ_TIMEOUT
-                    )
+                                  )
 
-                    r.raise_for_status()
+                r.raise_for_status()
+                
+                return r
 
+            except requests.exceptions.HTTPError, e:
+
+                # Throw exception again on auth error
+                if r.status_code == requests.codes.unauthorized:
+                    logger.error('Invalid user/pass')
+                    raise e
+
+                # Warn on content/server error
+                else:
+                    logger.warning(e)
                     return r
-                except Exception, e:
-                    tries += 1
 
-                    logger.exception(e)
-                    logger.warning('Request failed (%d/%d), retrying...' 
-                                 % (tries, self.MAX_TRIES))
+            # Retry on connection error
+            except requests.exceptions.ConnectionError, e:
+                tries += 1
 
-                    time.sleep(self.REQ_DELAY)        
+                # Throw exception after max tries
+                if tries == self.MAX_TRIES:
+                    logger.error('Max request attempts exceeded')
+                    raise e
+
+                logger.warning('Connection error (%d/%d), retrying...' 
+                               % (tries, self.MAX_TRIES))
+
+                time.sleep(self.REQ_DELAY)        
 
     def __visit_home(self):
         logger.debug('Visting home page (%s)...' % self.__base)
 
-        try:
-            requests.get(self.__base, timeout=self.REQ_TIMEOUT)
-        except Exception, e:
-            logging.warning(e)
+        self.__request(method='get')
 
     def __login(self):
         logger.info('Logging in to Drupal (%s)...' % self.__base)
@@ -159,5 +173,3 @@ class DrupalPoster:
         if r.status_code == requests.codes.ok:
             thing.time_posted = datetime.datetime.now()
             session.commit()
-        else:
-            logger.error('%d %s' % (r.status_code, r.text))
