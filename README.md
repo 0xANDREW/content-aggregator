@@ -10,7 +10,10 @@ Drupal Instance Preparation
 
 ### Steps
 1. Enable `services` module
+    1. `drush pm-download services && drush pm-enable services`
 2. Enable `REST Server` module
+    1. `drush pm-enable rest_server`
+2. Clear Drupal cache
 3. Add service endpoint (`/admin/structure/services/add`)
     1. Name: `api`
     2. Server: `REST`
