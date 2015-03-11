@@ -67,25 +67,29 @@ class SiteScraper:
     def scrape(self):
         logger.info('Starting scrape for %s' % self.__class__.__name__)
 
+        num_items = 0
+
         try:
             if self.RSS:
                 for params in self._scrape_rss(self.get()):
                     try:
                         self.__save(params)
+                        num_items += 1
 
                     # Abort feed scrape if duplicate found
                     except DuplicateException, e:
                         logger.warning(
-                            'Found duplicate item (%s), aborting' % e)
+                            'Found duplicate item (%s), aborting (%d new items)' % (e, num_items))
                         return
 
                     # Abort feed scrape if start date passed
                     except DateLimitException, e:
                         logger.warning(
-                            'Date limit passed (%s), aborting' % e)
+                            'Date limit passed (%s), aborting (%d new items)' % (e, num_items))
                         return
 
-                logger.info('Scrape complete for %s' % self.__class__.__name__)
+                logger.info('Scrape complete for %s (%d new items)' %
+                            (self.__class__.__name__, num_items))
             else:
                 page = 1
                 link = None
@@ -110,18 +114,20 @@ class SiteScraper:
                         except Exception, e:
                             logger.error('Processing error, skipping item')
                             logger.exception(e)
+                            continue
 
                         try:
                             self.__save(params)
+                            num_items += 1
 
                         except DuplicateException, e:
                             logger.warning(
-                                'Found duplicate item (%s), aborting' % e)
+                                'Found duplicate item (%s), aborting (%d new items)' % (e, num_items))
                             return
 
                         except DateLimitException, e:
                             logger.warning(
-                                'Date limit passed (%s), aborting' % e)
+                                'Date limit passed (%s), aborting (%d new items)' % (e, num_items))
                             return
 
                     # Commit after each page is processed
@@ -129,7 +135,8 @@ class SiteScraper:
 
                     # When next page link is None, scrape's complete
                     if link is None:
-                        logger.info('Scrape complete for %s' % self.__class__.__name__)
+                        logger.info('Scrape complete for %s (%d new items)' %
+                                    (self.__class__.__name__, num_items))
                         break
                         
                     else:
@@ -469,7 +476,8 @@ class ADBAgriculturePubScraper(SiteScraper):
     def _process_item(self, item):
         title = item.find('h3').find('a').text
         url = item.find('h3').find('a')['href']
-        date = self.get_date(soupselect.select(item, 'span.date-display-single')[0].text)
+        date = self.get_date(soupselect.select(
+            item, 'span.date-display-single')[0].text)
         body = soupselect.select(item, 'div.views-field-nothing-1 p')[0]
 
         return {
@@ -488,7 +496,77 @@ class UNESCAPPubScraper(SiteScraper):
     CLS = Publication
     START_DATE = datetime.datetime(2010, 1, 1)
 
+    def _next_link(self, soup):
+        return self.URL_BASE + soupselect.select(
+            soup, '.pager-next a')[0]['href']
+
+    def _get_items(self, soup):
+        return soupselect.select(soup, '.view-content .views-row')
+
+    def _process_item(self, item):
+        link = item.find('a')
+        title = link.text
+        url = self.URL_BASE + link['href']
+        body = soupselect.select(item, '.field-name-body p')[0].text
+        date = self.get_date(
+            soupselect.select(item, '.date-display-single')[0].text)
+
+        return {
+            'title': title,
+            'url': url,
+            'date': date,
+            'body': body
+        }
+
+class PIDSDiscussionPapersScraper(SiteScraper):
+    URL = 'http://www.pids.gov.ph/dp.php'
+    QUERY = '?pubyear=%s&type=2&submit=Display'
+    CLS = Publication
+    START_DATE = datetime.datetime(2010, 1, 1)
+    
+    current_year = datetime.datetime.now().year - 1
+
+    def _next_link(self, soup):
+        q = self.QUERY % self.current_year
+        self.current_year -= 1
+
+        return self.URL + q
+
+    def _get_items(self, soup):
+        return soupselect.select(soup, '#pub_result tr')
+
+    def _process_item(self, item):
+        data = soupselect.select(item, 'td')
+
+        if len(data) < 2:
+            raise ProcessingError()
+
+        m = re.search('(\d{4})', data[0].text)
+        if m:
+            date = int(m.group(1))
+        else:
+            raise ProcessingError()
+
+        return {
+            'title': data[1].find('a').text,
+            'url': data[1].find('a')['href'],
+            'date': datetime.datetime(date, 1, 1),
+            'body': ''
+        }
+
+class PIDSBooksScraper(PIDSDiscussionPapersScraper):
+    URL = 'http://www.pids.gov.ph/books.php'
+
+class PIDSPolicyNotesScraper(PIDSDiscussionPapersScraper):
+    URL = 'http://www.pids.gov.ph/policynotes.php'
+
 if __name__ == '__main__':
-    s = UNESCAP()
+    change_db('db/resakss.sqlite')
+    setup_elixir()
+
+    s = UNESCAPEventScraper()
+    s.scrape()
+
+    s = UNESCAPPubScraper()
     s.scrape()
     
