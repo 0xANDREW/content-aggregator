@@ -20,10 +20,10 @@ Drupal Instance Preparation
     2. Server: `REST`
     3. Path: `api`
     4. Session authentication: checked
-4. Edit endpoint resources (/admin/structure/services/list/api/resources)
+4. Edit endpoint resources (`/admin/structure/services/list/api/resources`)
     1. Enable `node/create` resource
     2. Enable `user/login` resource
-5. Edit endpoint REST parameters (/admin/structure/services/list/api/server)
+5. Edit endpoint REST parameters (`/admin/structure/services/list/api/server`)
     1. Response formatters: `json` only
     2. Request parsing: `application/json` only
 6. Create user `feed` with `developer` role
