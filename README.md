@@ -14,15 +14,16 @@ Drupal Instance Preparation
 2. Enable `REST Server` module
     1. `drush pm-enable rest_server`
 2. Clear Drupal cache
+    1. `drush cc all`
 3. Add service endpoint (`/admin/structure/services/add`)
     1. Name: `api`
     2. Server: `REST`
     3. Path: `api`
     4. Session authentication: checked
-4. Edit endpoint resources (/admin/structure/services/list/api/resources)
+4. Edit endpoint resources (`/admin/structure/services/list/api/resources`)
     1. Enable `node/create` resource
     2. Enable `user/login` resource
-5. Edit endpoint REST parameters (/admin/structure/services/list/api/server)
+5. Edit endpoint REST parameters (`/admin/structure/services/list/api/server`)
     1. Response formatters: `json` only
     2. Request parsing: `application/json` only
 6. Create user `feed` with `developer` role
@@ -43,12 +44,14 @@ Running the Aggregator
 ### Command-line Options (to `run.sh`)
 * `--no-scrape`: skip content scraping
 * `--no-post`: skip content upload
-* `--post-limit N`: only upload the first N items to Drupal
+* `--post-limit <N>`: only upload the first N items to Drupal
 * `--debug`: show debug info
-* `--db`: specify database file (default: `db/resakss.sqlite`)
+* `--db <db>`: specify database file (default: `db/resakss.sqlite`)
 * `--kill-db`: delete database before start
 * `--events-only`: only post events to Drupal
+* `--pubs-only`: only post pubs to Drupal
 * `--show-pending`: print number of pending things
+* `--only <scraper>`: only run specified scraper (see `scrapers.txt`)
 
 Notes
 -----  
@@ -57,4 +60,3 @@ Notes
 * Date limit for articles is January 1, 2014 and January 1, 2010 for events and publications.
 * Once a duplicate item is detected, the scrape for that feed is aborted.
 * If it's going to be a `cron` job, ensure that `run.sh` is run from the project root.
-  
