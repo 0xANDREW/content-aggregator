@@ -44,12 +44,14 @@ Running the Aggregator
 ### Command-line Options (to `run.sh`)
 * `--no-scrape`: skip content scraping
 * `--no-post`: skip content upload
-* `--post-limit N`: only upload the first N items to Drupal
+* `--post-limit <N>`: only upload the first N items to Drupal
 * `--debug`: show debug info
-* `--db`: specify database file (default: `db/resakss.sqlite`)
+* `--db <db>`: specify database file (default: `db/resakss.sqlite`)
 * `--kill-db`: delete database before start
 * `--events-only`: only post events to Drupal
+* `--pubs-only`: only post pubs to Drupal
 * `--show-pending`: print number of pending things
+* `--only <scraper>`: only run specified scraper (see `scrapers.txt`)
 
 Notes
 -----  
