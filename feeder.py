@@ -13,10 +13,6 @@ PROGRESS_INTERVAL = 500
 
 logger = None
 
-def setup_elixir():
-    setup_all()
-    create_all()    
-
 def setup_loggers():
     global logger
 
@@ -32,12 +28,15 @@ def setup_loggers():
     logging.getLogger('uploader').setLevel(MODULE_LOG_LEVEL)
 
 def do_post(poster, things, limit=None):
-    progress = 0
+    progress = 1
+    num_things = len(things)
 
     logger.info('Posting %s (%d)...' % 
-                 (things[0].__class__.__name__, len(things)))
+                 (things[0].__class__.__name__, num_things))
 
     for thing in things:
+        logger.debug('%d/%d...' % (progress, num_things))
+        
         d.post(thing)
         progress += 1        
 
@@ -58,8 +57,10 @@ if __name__ == '__main__':
     parser.add_argument('--db', default='db/resakss.sqlite')
     parser.add_argument('--kill-db', action='store_true')
     parser.add_argument('--events-only', action='store_true')
+    parser.add_argument('--pubs-only', action='store_true')
     parser.add_argument('--show-pending', action='store_true')
     parser.add_argument('--set-all-pending', action='store_true')
+    parser.add_argument('--only')
     args = parser.parse_args()
 
     if args.debug:
@@ -95,8 +96,14 @@ if __name__ == '__main__':
         with open(args.scrapers) as f:
             scrapers = map(lambda s: s.strip(), list(f))
 
+        if args.only:
+            scrapers = args.only.split(',')
+
         for s in scrapers:
-            getattr(scraper, s)().scrape()
+
+            # Python-style comments available for scrapers.txt
+            if not s.startswith('#'):
+                getattr(scraper, s)().scrape()
     else:
         logger.info('Skipping scrape')
 
@@ -115,6 +122,9 @@ if __name__ == '__main__':
 
         if args.events_only:
             classes = [ Event ]
+
+        if args.pubs_only:
+            classes = [ Publication ]
 
         for cls in classes:
             things = cls.pending_post()            
