@@ -14,6 +14,7 @@ Drupal Instance Preparation
 2. Enable `REST Server` module
     1. `drush pm-enable rest_server`
 2. Clear Drupal cache
+    1. `drush cc all`
 3. Add service endpoint (`/admin/structure/services/add`)
     1. Name: `api`
     2. Server: `REST`
@@ -57,4 +58,3 @@ Notes
 * Date limit for articles is January 1, 2014 and January 1, 2010 for events and publications.
 * Once a duplicate item is detected, the scrape for that feed is aborted.
 * If it's going to be a `cron` job, ensure that `run.sh` is run from the project root.
-  
