@@ -5,6 +5,10 @@ from elixir import *
 
 # metadata.bind.echo = True
 
+def setup_elixir():
+    setup_all()
+    create_all()    
+
 def change_db(db):
     metadata.bind = 'sqlite:///%s' % db
 
