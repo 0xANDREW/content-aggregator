@@ -86,6 +86,7 @@ class DrupalPoster:
                 # Warn on content/server error
                 else:
                     logger.warning(e)
+                    logger.debug(data)
                     return r
 
             # Retry on connection error
@@ -155,7 +156,10 @@ class DrupalPoster:
         elif node_type == 'event':
             if thing.start_time:
                 value = thing.start_time.strftime(self.DATE_FMT)
-                value2 = thing.end_time.strftime(self.DATE_FMT) if thing.end_time else None
+
+                # If no end date for event, use start date
+                value2 = thing.end_time.strftime(self.DATE_FMT) \
+                         if thing.end_time else value
 
                 data['field_event_date'] = {
                     'und': [{ 
