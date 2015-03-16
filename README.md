@@ -68,7 +68,7 @@ Running the Aggregator
 2. Save as `drupal.env`
 3. Execute `run.sh` from the project root
     * If the internal scraper database should be cleared, either delete `db/resakss.sqlite` or run the scraper manually for the first time: `./run.sh --kill-db`
-    * For `cron`, run it like this: `cd <scraper dir> && ./run.sh`
+    * For `cron`, run it like this (probably at midnight): `cd <scraper dir> && ./run.sh`
 
 ### Command-line Options (to `run.sh`)
 * `--no-scrape`: skip content scraping
