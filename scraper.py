@@ -293,6 +293,7 @@ class UNESCAP(SiteScraper):
             'date': date
         }
 
+# 404    
 class FAOAsia(SiteScraper):
     URL = 'http://www.fao.org/asiapacific/rap/home/news/rss/en/?type=334'
     RSS = True
@@ -316,6 +317,7 @@ class FAOAsia(SiteScraper):
 
         return rv
 
+# 404
 class SEARCA(SiteScraper):
     URL = 'http://www.searca.org/index.php/news'
     URL_BASE = 'http://www.searca.org'
@@ -460,6 +462,7 @@ class WBSouthAsiaPubScraper(SiteScraper):
 class WBEastAsiaPubScraper(WBSouthAsiaPubScraper):
     URL = 'http://wbws.worldbank.org/feeds/xml/eap_all.xml'
 
+# 404    
 class ADBAgriculturePubScraper(SiteScraper):
     URL = 'http://www.adb.org/publications/search/448'
     URL_BASE = 'http://www.adb.org'
@@ -487,6 +490,7 @@ class ADBAgriculturePubScraper(SiteScraper):
             'body': body
         }
 
+# 404
 class ADBPovertyPubScraper(ADBAgriculturePubScraper):
     URL = 'http://www.adb.org/publications/search/211'
 
@@ -518,6 +522,7 @@ class UNESCAPPubScraper(SiteScraper):
             'body': body
         }
 
+# PIDS feeds are too slow to be consistently scraped    
 class PIDSDiscussionPapersScraper(SiteScraper):
     URL = 'http://www.pids.gov.ph/dp.php'
     QUERY = '?pubyear=%s&type=2&submit=Display'

@@ -4,16 +4,29 @@ ReSAKSS Content Aggregator
 Content Sources
 ---------------------
 ### World Bank South Asia
-* Articles: `http://www.worldbank.org/en/region/sar/whats-new`
-* Publications (RSS): `http://wbws.worldbank.org/feeds/xml/sar_all.xml`
+* Articles: <http://www.worldbank.org/en/region/sar/whats-new>
+* Publications (RSS): <http://wbws.worldbank.org/feeds/xml/sar_all.xml>
 
 ### World Bank East Asia
-* Articles: `http://www.worldbank.org/en/region/eap/whats-new`
-* Publications (RSS): `http://wbws.worldbank.org/feeds/xml/eap_all.xml`
+* Articles: <http://www.worldbank.org/en/region/eap/whats-new>
+* Publications (RSS): <http://wbws.worldbank.org/feeds/xml/eap_all.xml>
 
 ### Asian Development Bank
-* Articles: `http://feeds.feedburner.com/adb_news`
+* Articles (RSS): <http://feeds.feedburner.com/adb_news>
 
+### ASEAN
+* Articles: <http://www.asean.org/news>
+
+### UNESCAP
+* Articles: <http://www.unescap.org/media-centre/feature-stories>
+* Events: <http://www.unescap.org/events/upcoming>
+* Publications: <http://www.unescap.org/publications>
+
+### CACARRI
+* Articles (RSS): <http://www.cacaari.org/news/rss>
+
+### APAARI
+* Events (RSS): <http://www.apaari.org/events/feed>
 
 Drupal Instance Preparation
 ---------------------------
@@ -76,3 +89,12 @@ Notes
 * Date limit for articles is January 1, 2014 and January 1, 2010 for events and publications.
 * Once a duplicate item is detected, the scrape for that feed is aborted.
 * If it's going to be a `cron` job, ensure that `run.sh` is run from the project root.
+
+Known Issues
+----
+* FAO Asia (<http://www.fao.org/asiapacific/rap/home/news/rss/en/?type=334>) - bad link
+* SEARCA (<http://www.searca.org/index.php/news>) - bad link
+* APAARI Events RSS feed does not include parseable event dates
+* Asian Development Bank agriculture publications (<http://www.adb.org/publications/search/448>) - bad link
+* Asian Development Bank poverty publications (<http://www.adb.org/publications/search/211>) - bad link
+* PIDS site (<http://www.pids.gov.ph>) is too unreliable to be scraped consistently
