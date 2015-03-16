@@ -1,6 +1,20 @@
 ReSAKSS Content Aggregator
 ==========================
 
+Content Sources
+---------------------
+### World Bank South Asia
+* Articles: `http://www.worldbank.org/en/region/sar/whats-new`
+* Publications (RSS): `http://wbws.worldbank.org/feeds/xml/sar_all.xml`
+
+### World Bank East Asia
+* Articles: `http://www.worldbank.org/en/region/eap/whats-new`
+* Publications (RSS): `http://wbws.worldbank.org/feeds/xml/eap_all.xml`
+
+### Asian Development Bank
+* Articles: `http://feeds.feedburner.com/adb_news`
+
+
 Drupal Instance Preparation
 ---------------------------
 
@@ -40,6 +54,8 @@ Running the Aggregator
 1. Edit `drupal.env.sample` in the source tree to match your instance's parameters
 2. Save as `drupal.env`
 3. Execute `run.sh` from the project root
+    * If the internal scraper database should be cleared, either delete `db/resakss.sqlite` or run the scraper manually for the first time: `./run.sh --kill-db`
+    * For `cron`, run it like this: `cd <scraper dir> && ./run.sh`
 
 ### Command-line Options (to `run.sh`)
 * `--no-scrape`: skip content scraping
