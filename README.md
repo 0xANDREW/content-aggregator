@@ -1,6 +1,10 @@
 Content Aggregator
 ==========================
 
+Description
+----
+Combination web scraper and Drupal uploader. The content sources listed below are scraped (raw or via RSS), the entries stored in a local SQLite database, then uploaded to a Drupal instance via the REST API (part of the `services` module). 
+
 Content Sources
 ---------------------
 ### World Bank South Asia
