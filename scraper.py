@@ -564,14 +564,3 @@ class PIDSBooksScraper(PIDSDiscussionPapersScraper):
 
 class PIDSPolicyNotesScraper(PIDSDiscussionPapersScraper):
     URL = 'http://www.pids.gov.ph/policynotes.php'
-
-if __name__ == '__main__':
-    change_db('db/resakss.sqlite')
-    setup_elixir()
-
-    s = UNESCAPEventScraper()
-    s.scrape()
-
-    s = UNESCAPPubScraper()
-    s.scrape()
-    

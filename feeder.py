@@ -54,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--no-post', action='store_true')
     parser.add_argument('--post-limit', type=int)
     parser.add_argument('--debug', action='store_true')
-    parser.add_argument('--db', default='db/resakss.sqlite')
+    parser.add_argument('--db', default='db/scraper.sqlite')
     parser.add_argument('--kill-db', action='store_true')
     parser.add_argument('--events-only', action='store_true')
     parser.add_argument('--pubs-only', action='store_true')

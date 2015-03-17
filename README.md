@@ -1,4 +1,4 @@
-ReSAKSS Content Aggregator
+Content Aggregator
 ==========================
 
 Content Sources
@@ -67,7 +67,7 @@ Running the Aggregator
 1. Edit `drupal.env.sample` in the source tree to match your instance's parameters
 2. Save as `drupal.env`
 3. Execute `run.sh` from the project root
-    * If the internal scraper database should be cleared, either delete `db/resakss.sqlite` or run the scraper manually for the first time: `./run.sh --kill-db`
+    * If the internal scraper database should be cleared, either delete `db/scraper.sqlite` or run the scraper manually for the first time: `./run.sh --kill-db`
     * For `cron`, run it like this (probably at midnight): `cd <scraper dir> && ./run.sh`
 
 ### Command-line Options (to `run.sh`)
@@ -75,7 +75,7 @@ Running the Aggregator
 * `--no-post`: skip content upload
 * `--post-limit <N>`: only upload the first N items to Drupal
 * `--debug`: show debug info
-* `--db <db>`: specify database file (default: `db/resakss.sqlite`)
+* `--db <db>`: specify database file (default: `db/scraper.sqlite`)
 * `--kill-db`: delete database before start
 * `--events-only`: only post events to Drupal
 * `--pubs-only`: only post pubs to Drupal
