@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     logger.info('Using DB %s' % args.db)
 
-    change_db(args.db)        
+    change_db(args.db)
     setup_elixir()
 
     if args.set_all_pending:
@@ -88,7 +88,14 @@ if __name__ == '__main__':
 
     if args.show_pending:
         for cls in [ Article, Event, Publication ]:
-            print '%s: %d' % (cls.__name__, len(cls.pending_post()))
+            items = cls.pending_post()
+
+            print '%s: %d' % (cls.__name__, len(items))
+
+            for item in items:
+                txt = '%s %s (%s)' % (item.date, item.title, item.url)
+
+                logger.debug(txt)
 
         sys.exit()
 
