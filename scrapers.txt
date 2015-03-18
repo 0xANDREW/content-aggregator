@@ -6,6 +6,7 @@ UNESCAP
 FAOAsia
 SEARCA
 CACAARI
+UCentralAsiaNewsScraper
 APARRIEventScraper
 UNESCAPEventScraper
 WBSouthAsiaPubScraper

@@ -123,12 +123,12 @@ class SiteScraper:
                         except DuplicateException, e:
                             logger.warning(
                                 'Found duplicate item (%s), aborting (%d new items)' % (e, num_items))
-                            return
+                            break
 
                         except DateLimitException, e:
                             logger.warning(
                                 'Date limit passed (%s), aborting (%d new items)' % (e, num_items))
-                            return
+                            break
 
                     # Commit after each page is processed
                     session.commit()
@@ -212,8 +212,7 @@ class WBSouthAsia(SiteScraper):
             if detail:
                 detail.a.decompose()
 
-        date_text = soupselect.select(article, '.date')[0].text
-        date = re.match('Date: (.+)', date_text).groups()[0]
+        date = re.search('Date: (.+)', article.text).groups()[0]
 
         return {
             'title': title,
@@ -370,6 +369,38 @@ class CACAARI(SiteScraper):
 
         return rv
 
+class UCentralAsiaNewsScraper(SiteScraper):
+    URL = 'http://www.ucentralasia.org/news.asp'
+    URL_BASE = 'http://www.ucentralasia.org'
+    CLS = Article
+
+    def _get_items(self, soup):
+        rv = []
+        brs = soup.select('#centre > br')
+
+        # Article listing is a mess of <p> tags, but luckily separated by <br>
+        for br in brs:
+            rv.append([
+                br.previousSibling,
+                br.previousSibling.previousSibling
+            ])
+
+        return rv
+
+    def _process_item(self, item):
+        if item[0].name != 'p' and item[1] != 'p':
+            raise ProcessingError()
+
+        date_text = item[1].select('span')[0].text
+        m = re.search('(\d+ \w+ \d+)', date_text)
+    
+        return {
+            'title': item[1].select('a')[0].text,
+            'url': '%s/%s' % (self.URL_BASE, item[1].select('a')[0]['href']),
+            'body': item[0].text,
+            'date': self.get_date(m.group(1))
+        }        
+
 # RSS doesn't actually include parseable event dates
 class APARRIEventScraper(SiteScraper):
     URL = 'http://www.apaari.org/events/feed/'
@@ -440,27 +471,13 @@ class UNESCAPEventScraper(SiteScraper):
             'body': body
         }
 
-class WBSouthAsiaPubScraper(SiteScraper):
-    URL = 'http://wbws.worldbank.org/feeds/xml/sar_all.xml'
-    RSS = True
+class WBSouthAsiaPubScraper(WBSouthAsia):
+    URL = 'http://www.worldbank.org/en/region/sar/research/all'
     CLS = Publication
     START_DATE = datetime.datetime(2010, 1, 1)
 
-    def _scrape_rss(self, items):
-        rv = []
-
-        for item in items:
-            rv.append({
-                'title': item['title'],
-                'url': item['link'],
-                'date': self.get_date(item['published_parsed']),
-                'body': item['summary']
-            })
-
-        return rv
-
 class WBEastAsiaPubScraper(WBSouthAsiaPubScraper):
-    URL = 'http://wbws.worldbank.org/feeds/xml/eap_all.xml'
+    URL = 'http://www.worldbank.org/en/region/eap/research/all'
 
 # 404    
 class ADBAgriculturePubScraper(SiteScraper):
