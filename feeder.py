@@ -2,6 +2,7 @@ import sys
 import argparse
 import logging
 import os
+import json
 
 import scraper
 import uploader
@@ -80,22 +81,37 @@ if __name__ == '__main__':
     setup_elixir()
 
     if args.set_all_pending:
+        logger.info('Set all things pending')
+
         for cls in [ Article, Event, Publication ]:
             cls.set_all_pending()
 
-        logger.info('Set all things pending')
         sys.exit()
 
     if args.show_pending:
+        logger.info('Showing pending items')
+
+        pending_map = {}
+
         for cls in [ Article, Event, Publication ]:
             items = cls.pending_post()
 
-            print '%s: %d' % (cls.__name__, len(items))
-
             for item in items:
-                txt = '%s %s (%s)' % (item.date, item.title, item.url)
 
+                # Debug text
+                txt = '%s %s (%s)' % (item.date, item.title, item.url)
                 logger.debug(txt)
+
+                # Group pending items by scraper type, then class
+                if item.scraper_type not in pending_map:
+                    pending_map[item.scraper_type] = {}
+
+                if cls.__name__ not in pending_map[item.scraper_type]:
+                    pending_map[item.scraper_type][cls.__name__] = 0
+
+                pending_map[item.scraper_type][cls.__name__] += 1
+
+        print json.dumps(pending_map, sort_keys=True, indent=4)
 
         sys.exit()
 

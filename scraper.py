@@ -76,17 +76,14 @@ class SiteScraper:
                         self.__save(params)
                         num_items += 1
 
-                    # Abort feed scrape if duplicate found
                     except DuplicateException, e:
-                        logger.warning(
-                            'Found duplicate item (%s), aborting (%d new items)' % (e, num_items))
-                        return
+                        logger.warning('Found duplicate item (%s)' % e)
 
                     # Abort feed scrape if start date passed
                     except DateLimitException, e:
                         logger.warning(
                             'Date limit passed (%s), aborting (%d new items)' % (e, num_items))
-                        return
+                        break
 
                 logger.info('Scrape complete for %s (%d new items)' %
                             (self.__class__.__name__, num_items))
@@ -120,14 +117,15 @@ class SiteScraper:
                             self.__save(params)
                             num_items += 1
 
+                        # Don't abort on dupe as pagination could be wonky
                         except DuplicateException, e:
-                            logger.warning(
-                                'Found duplicate item (%s), aborting (%d new items)' % (e, num_items))
-                            break
+                            logger.warning('Found duplicate item (%s)' % e)
 
                         except DateLimitException, e:
                             logger.warning(
                                 'Date limit passed (%s), aborting (%d new items)' % (e, num_items))
+
+                            link = None
                             break
 
                     # Commit after each page is processed
