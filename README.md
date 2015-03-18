@@ -5,11 +5,11 @@ Content Sources
 ---------------------
 ### World Bank South Asia
 * Articles: <http://www.worldbank.org/en/region/sar/whats-new>
-* Publications (RSS): <http://wbws.worldbank.org/feeds/xml/sar_all.xml>
+* Publications: <http://www.worldbank.org/en/region/sar/research/all>
 
 ### World Bank East Asia
 * Articles: <http://www.worldbank.org/en/region/eap/whats-new>
-* Publications (RSS): <http://wbws.worldbank.org/feeds/xml/eap_all.xml>
+* Publications: <http://www.worldbank.org/en/region/eap/research/all>
 
 ### Asian Development Bank
 * Articles (RSS): <http://feeds.feedburner.com/adb_news>
@@ -27,6 +27,9 @@ Content Sources
 
 ### APAARI
 * Events (RSS): <http://www.apaari.org/events/feed>
+
+### University of Central Asia
+* Articles: <http://www.ucentralasia.org/news.asp>
 
 Drupal Instance Preparation
 ---------------------------
