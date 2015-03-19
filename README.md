@@ -92,10 +92,8 @@ Running the Aggregator
 
 Notes
 -----  
-* The scraping process takes 1-2 hours to run the first time. Subsequent runs take much less time since the process aborts the feed as soon as it finds a duplicate URL. The time required to post all the items to Drupal depends on the number of items scraped.
 * All uploaded items are unpublished by default.
 * Date limit for articles is January 1, 2014 and January 1, 2010 for events and publications.
-* Once a duplicate item is detected, the scrape for that feed is aborted.
 * If it's going to be a `cron` job, ensure that `run.sh` is run from the project root.
 
 Known Issues
