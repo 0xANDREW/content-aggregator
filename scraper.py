@@ -75,7 +75,6 @@ class SiteScraper:
                         self.__save(params)
                         num_items += 1
 
-                    # Abort feed scrape if duplicate found
                     except DuplicateException, e:
                         logger.warning(
                             'Found duplicate item (%s)' % e)
@@ -119,6 +118,7 @@ class SiteScraper:
                             self.__save(params)
                             num_items += 1
 
+                        # Don't abort on dupe as pagination could be wonky
                         except DuplicateException, e:
                             logger.warning(
                                 'Found duplicate item (%s)' % e)
