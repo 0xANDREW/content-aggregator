@@ -373,6 +373,7 @@ class APARRIEventScraper(SiteScraper):
     URL = 'http://www.apaari.org/events/feed/'
     RSS = True
     CLS = Event
+    START_DATE = datetime.datetime(2010, 1, 1)
 
     def _scrape_rss(self, items):
         rv = []
@@ -391,6 +392,7 @@ class UNESCAPEventScraper(SiteScraper):
     URL = 'http://www.unescap.org/events/upcoming'
     URL_BASE = 'http://www.unescap.org'
     CLS = Event
+    START_DATE = datetime.datetime(2010, 1, 1)
 
     def _next_link(self, soup):
         return self.URL_BASE + soup.select(
