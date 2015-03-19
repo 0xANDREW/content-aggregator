@@ -17,6 +17,7 @@ Content Sources
 
 ### Asian Development Bank
 * Articles (RSS): <http://feeds.feedburner.com/adb_news>
+* Publications (RSS): <http://feeds.feedburner.com/adb_publications>
 
 ### ASEAN
 * Articles: <http://www.asean.org/news>

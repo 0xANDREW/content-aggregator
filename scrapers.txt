@@ -3,14 +3,12 @@ WBEastAsia
 AsianDevelopmentBank
 ASEAN
 UNESCAP
-FAOAsia
-SEARCA
 CACAARI
 UCentralAsiaNewsScraper
 APARRIEventScraper
 UNESCAPEventScraper
 WBSouthAsiaPubScraper
 WBEastAsiaPubScraper
-ADBAgriculturePubScraper
-ADBPovertyPubScraper
 UNESCAPPubScraper
+ADBPubScraper
+

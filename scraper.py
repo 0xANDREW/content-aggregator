@@ -292,65 +292,6 @@ class UNESCAP(SiteScraper):
             'date': date
         }
 
-# 404    
-class FAOAsia(SiteScraper):
-    URL = 'http://www.fao.org/asiapacific/rap/home/news/rss/en/?type=334'
-    RSS = True
-    CLS = Article
-
-    def _scrape_rss(self, items):
-        rv = []
-
-        for item in items:
-            title = item['title']
-            url = item['guid']
-            date = item['published_parsed']
-            body = item['summary']
-
-            rv.append({
-                'title': title,
-                'url': url,
-                'body': body,
-                'date': self.get_date(date)
-            })
-
-        return rv
-
-# 404
-class SEARCA(SiteScraper):
-    URL = 'http://www.searca.org/index.php/news'
-    URL_BASE = 'http://www.searca.org'
-    CLS = Article
-
-    def _next_link(self, soup):
-        return self.URL_BASE + soupselect.select(
-            soup, 'a[title=Next]')[0]['href']
-
-    def _get_items(self, soup):
-        tables = soupselect.select(soup, 'table.contentpaneopen')        
-        return zip(*2 * [ iter(tables) ])
-
-    def _process_item(self, item):
-        title = item[0].find('a').text
-        url = item[0].find('a')['href']
-
-        try:
-            body = item[1].find_all('p')[-1].text
-
-        # Sometimes the content is in a <p> tag, sometimes not
-        except:
-            body = item[1].find('td').text
-
-        # Articles have no published date
-        date = datetime.datetime.now()
-
-        return {
-            'title': title,
-            'url': url,
-            'body': body,
-            'date': date
-        }
-
 class CACAARI(SiteScraper):
     URL = 'http://www.cacaari.org/news/rss'
     RSS = True
@@ -479,37 +420,24 @@ class WBSouthAsiaPubScraper(WBSouthAsia):
 class WBEastAsiaPubScraper(WBSouthAsiaPubScraper):
     URL = 'http://www.worldbank.org/en/region/eap/research/all'
 
-# 404    
-class ADBAgriculturePubScraper(SiteScraper):
-    URL = 'http://www.adb.org/publications/search/448'
-    URL_BASE = 'http://www.adb.org'
+class ADBPubScraper(SiteScraper):
+    URL = 'http://feeds.feedburner.com/adb_publications'
+    RSS = True
     CLS = Publication
     START_DATE = datetime.datetime(2010, 1, 1)
 
-    def _next_link(self, soup):
-        return self.URL_BASE + soupselect.select(
-            soup, 'li.pager-next a')[0]['href']
+    def _scrape_rss(self, items):
+        rv = []
 
-    def _get_items(self, soup):
-        return soupselect.select(soup, 'div.views-row')
+        for item in items:
+            rv.append({
+                'title': item['title'],
+                'url': item['link'],
+                'body': item['description'],
+                'date': self.get_date(item['published_parsed'])
+            })
 
-    def _process_item(self, item):
-        title = item.find('h3').find('a').text
-        url = item.find('h3').find('a')['href']
-        date = self.get_date(soupselect.select(
-            item, 'span.date-display-single')[0].text)
-        body = soupselect.select(item, 'div.views-field-nothing-1 p')[0]
-
-        return {
-            'title': title,
-            'url': url,
-            'date': date,
-            'body': body
-        }
-
-# 404
-class ADBPovertyPubScraper(ADBAgriculturePubScraper):
-    URL = 'http://www.adb.org/publications/search/211'
+        return rv
 
 class UNESCAPPubScraper(SiteScraper):
     URL = 'http://www.unescap.org/publications'
@@ -538,46 +466,3 @@ class UNESCAPPubScraper(SiteScraper):
             'date': date,
             'body': body
         }
-
-# PIDS feeds are too slow to be consistently scraped    
-class PIDSDiscussionPapersScraper(SiteScraper):
-    URL = 'http://www.pids.gov.ph/dp.php'
-    QUERY = '?pubyear=%s&type=2&submit=Display'
-    CLS = Publication
-    START_DATE = datetime.datetime(2010, 1, 1)
-    
-    current_year = datetime.datetime.now().year - 1
-
-    def _next_link(self, soup):
-        q = self.QUERY % self.current_year
-        self.current_year -= 1
-
-        return self.URL + q
-
-    def _get_items(self, soup):
-        return soupselect.select(soup, '#pub_result tr')
-
-    def _process_item(self, item):
-        data = soupselect.select(item, 'td')
-
-        if len(data) < 2:
-            raise ProcessingError()
-
-        m = re.search('(\d{4})', data[0].text)
-        if m:
-            date = int(m.group(1))
-        else:
-            raise ProcessingError()
-
-        return {
-            'title': data[1].find('a').text,
-            'url': data[1].find('a')['href'],
-            'date': datetime.datetime(date, 1, 1),
-            'body': ''
-        }
-
-class PIDSBooksScraper(PIDSDiscussionPapersScraper):
-    URL = 'http://www.pids.gov.ph/books.php'
-
-class PIDSPolicyNotesScraper(PIDSDiscussionPapersScraper):
-    URL = 'http://www.pids.gov.ph/policynotes.php'
