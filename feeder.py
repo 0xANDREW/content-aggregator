@@ -125,7 +125,7 @@ if __name__ == '__main__':
         for s in scrapers:
 
             # Python-style comments available for scrapers.txt
-            if not s.startswith('#'):
+            if not s.startswith('#') and not len(s) == 0:
                 getattr(scraper, s)().scrape()
     else:
         logger.info('Skipping scrape')
