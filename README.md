@@ -94,7 +94,6 @@ Notes
 -----  
 * All uploaded items are unpublished by default.
 * Date limit for articles is January 1, 2014 and January 1, 2010 for events and publications.
-* If it's going to be a `cron` job, ensure that `run.sh` is run from the project root.
 
 Known Issues
 ----
