@@ -7,7 +7,6 @@ import logging
 import feedparser
 from bs4 import BeautifulSoup
 import requests
-import soupselect
 import re
 import dateutil.parser
 
@@ -79,14 +78,14 @@ class SiteScraper:
                     # Abort feed scrape if duplicate found
                     except DuplicateException, e:
                         logger.warning(
-                            'Found duplicate item (%s), aborting (%d new items)' % (e, num_items))
-                        return
+                            'Found duplicate item (%s)' % e)
+                        break
 
                     # Abort feed scrape if start date passed
                     except DateLimitException, e:
                         logger.warning(
-                            'Date limit passed (%s), aborting (%d new items)' % (e, num_items))
-                        return
+                            'Date limit passed (%s)' % e)
+                        break
 
                 logger.info('Scrape complete for %s (%d new items)' %
                             (self.__class__.__name__, num_items))
@@ -122,12 +121,14 @@ class SiteScraper:
 
                         except DuplicateException, e:
                             logger.warning(
-                                'Found duplicate item (%s), aborting (%d new items)' % (e, num_items))
+                                'Found duplicate item (%s)' % e)
                             break
 
                         except DateLimitException, e:
                             logger.warning(
-                                'Date limit passed (%s), aborting (%d new items)' % (e, num_items))
+                                'Date limit passed (%s)' % e)
+
+                            link = None
                             break
 
                     # Commit after each page is processed
@@ -185,14 +186,14 @@ class WBSouthAsia(SiteScraper):
     def _next_link(self, soup):
         rv = None
 
-        for a in soupselect.select(soup, 'div.f05v3-pagination li a'):
+        for a in soup.select('div.f05v3-pagination li a'):
             if a.text.startswith('NEXT'):
                 rv = self.URL_BASE + a['href']
 
         return rv
 
     def _get_items(self, soup):
-        return soupselect.select(soup, 'div.n07v3-generic-list-comp')
+        return soup.select('div.n07v3-generic-list-comp')
 
     def _process_item(self, article):
         title = article.find('h6').text.strip()
@@ -248,11 +249,11 @@ class ASEAN(SiteScraper):
     CLS = Article
 
     def _next_link(self, soup):
-        return self.URL_BASE + soupselect.select(
-            soup, 'div.pagination-bg a.next')[0]['href']
+        return self.URL_BASE + soup.select(
+            'div.pagination-bg a.next')[0]['href']
 
     def _get_items(self, soup):
-        return soupselect.select(soup, 'div.teaser-item')
+        return soup.select('div.teaser-item')
 
     def _process_item(self, item):
         title = item.find('h1').text
@@ -276,13 +277,13 @@ class UNESCAP(SiteScraper):
     CLS = Article
 
     def _get_items(self, soup):
-        return soupselect.select(soup, 'div.view-mode-feature_story .group-right')
+        return soup.select('div.view-mode-feature_story .group-right')
 
     def _process_item(self, item):
         title = item.find('h2').find('a').text
         url = self.URL_BASE + item.find('h2').find('a')['href']
-        date = self.get_date(soupselect.select(
-            item, '.date-display-single')[0].text)
+        date = self.get_date(item.select(
+            '.date-display-single')[0].text)
         body = item.find('div', class_='field-name-body')
 
         return {
@@ -293,22 +294,44 @@ class UNESCAP(SiteScraper):
         }
 
 class CACAARI(SiteScraper):
-    URL = 'http://www.cacaari.org/news/rss'
-    RSS = True
+    URL = 'http://www.cacaari.org/en.php?/news'
+    URL_BASE = 'http://www.cacaari.org'
     CLS = Article
 
-    def _scrape_rss(self, items):
+    def _next_link(self, soup):
+        for a in soup.select('#pages_counter a'):
+            if a.text == '>':
+                return self.URL_BASE + a['href']
+
+        return None
+
+    def _get_items(self, soup):
         rv = []
 
-        for item in items:
-            rv.append({
-                'title': item['title'],
-                'url': item['guid'],
-                'date': self.get_date(item['published_parsed']),
-                'body': item['summary']
-            })
+        for h2 in soup.select('#page_body h2'):
+            rv.append([
+
+                # Title
+                h2,
+
+                # Date
+                h2.nextSibling.nextSibling,
+
+                # Body
+                h2.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling
+            ])
 
         return rv
+
+    def _process_item(self, item):
+        m = re.search('(\d+)', item[1].text)
+
+        return {
+            'title': item[0].select('a')[0].text,
+            'url': item[0].select('a')[0]['href'],
+            'date': self.get_date(m.group(1)),
+            'body': item[2].text
+        }
 
 class UCentralAsiaNewsScraper(SiteScraper):
     URL = 'http://www.ucentralasia.org/news.asp'
@@ -367,11 +390,11 @@ class UNESCAPEventScraper(SiteScraper):
     CLS = Event
 
     def _next_link(self, soup):
-        return self.URL_BASE + soupselect.select(
-            soup, 'li.pager-next a')[0]['href']
+        return self.URL_BASE + soup.select(
+            'li.pager-next a')[0]['href']
 
     def _get_items(self, soup):
-        return soupselect.select(soup, 'div.item-list li.views-row')
+        return soup.select('div.item-list li.views-row')
 
     def _process_item(self, li):
         title = li.find('h2').find('a').text
@@ -379,26 +402,26 @@ class UNESCAPEventScraper(SiteScraper):
         start_time = None
         end_time = None
 
-        container = soupselect.select(
-            li, 'div.field-name-field-event-dates')[0]
+        container = li.select(
+            'div.field-name-field-event-dates')[0]
 
-        single = soupselect.select(container, 'span.date-display-single')
+        single = container.select('span.date-display-single')
 
         if len(single) > 0:
             start_time = self.get_date(single[0].text)
         else:
-            start_time = self.get_date(soupselect.select(
-                container, 'span.date-display-start')[0].text)
-            end_time = self.get_date(soupselect.select(
-                container, 'span.date-display-end')[0].text)
+            start_time = self.get_date(container.select(
+                'span.date-display-start')[0].text)
+            end_time = self.get_date(container.select(
+                'span.date-display-end')[0].text)
 
-        event_type = unicode(soupselect.select(
-            li, 'div.field-name-field-event-type')[0])
+        event_type = unicode(li.select(
+            'div.field-name-field-event-type')[0])
         event_loc = ''
 
         try:
             event_loc = unicode(
-                soupselect.select(li, 'div.field-name-venue')[0])
+                li.select('div.field-name-venue')[0])
         except:
             pass
 
@@ -413,12 +436,14 @@ class UNESCAPEventScraper(SiteScraper):
         }
 
 class WBSouthAsiaPubScraper(WBSouthAsia):
-    URL = 'http://www.worldbank.org/en/region/sar/research/all'
+    URL = 'http://www.worldbank.org/en/region/sar/research/all'\
+          '?majdocty_exact=Publications+%26+Research&qterm=&lang_exact=English'
     CLS = Publication
     START_DATE = datetime.datetime(2010, 1, 1)
 
 class WBEastAsiaPubScraper(WBSouthAsiaPubScraper):
-    URL = 'http://www.worldbank.org/en/region/eap/research/all'
+    URL = 'http://www.worldbank.org/en/region/eap/research/all'\
+          '?majdocty_exact=Publications+%26+Research&qterm=&lang_exact=English'
 
 class ADBPubScraper(SiteScraper):
     URL = 'http://feeds.feedburner.com/adb_publications'
@@ -446,19 +471,19 @@ class UNESCAPPubScraper(SiteScraper):
     START_DATE = datetime.datetime(2010, 1, 1)
 
     def _next_link(self, soup):
-        return self.URL_BASE + soupselect.select(
-            soup, '.pager-next a')[0]['href']
+        return self.URL_BASE + soup.select(
+            '.pager-next a')[0]['href']
 
     def _get_items(self, soup):
-        return soupselect.select(soup, '.view-content .views-row')
+        return soup.select('.view-content .views-row')
 
     def _process_item(self, item):
         link = item.find('a')
         title = link.text
         url = self.URL_BASE + link['href']
-        body = soupselect.select(item, '.field-name-body p')[0].text
+        body = item.select('.field-name-body p')[0].text
         date = self.get_date(
-            soupselect.select(item, '.date-display-single')[0].text)
+            item.select('.date-display-single')[0].text)
 
         return {
             'title': title,
