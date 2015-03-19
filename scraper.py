@@ -276,6 +276,9 @@ class UNESCAP(SiteScraper):
     URL_BASE = 'http://www.unescap.org'
     CLS = Article
 
+    def _next_link(self, soup):
+        return self.URL_BASE + soup.select('li.pager-next a')[0]['href']
+
     def _get_items(self, soup):
         return soup.select('div.view-mode-feature_story .group-right')
 
