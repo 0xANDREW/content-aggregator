@@ -100,9 +100,4 @@ Notes
 
 Known Issues
 ----
-* FAO Asia (<http://www.fao.org/asiapacific/rap/home/news/rss/en/?type=334>) - bad link
-* SEARCA (<http://www.searca.org/index.php/news>) - bad link
 * APAARI Events RSS feed does not include parseable event dates
-* Asian Development Bank agriculture publications (<http://www.adb.org/publications/search/448>) - bad link
-* Asian Development Bank poverty publications (<http://www.adb.org/publications/search/211>) - bad link
-* PIDS site (<http://www.pids.gov.ph>) is too unreliable to be scraped consistently
