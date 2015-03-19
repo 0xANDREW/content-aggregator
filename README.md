@@ -9,11 +9,11 @@ Content Sources
 ---------------------
 ### World Bank South Asia
 * Articles: <http://www.worldbank.org/en/region/sar/whats-new>
-* Publications: <http://www.worldbank.org/en/region/sar/research/all>
+* Publications: <http://www.worldbank.org/en/region/sar/research/all?majdocty_exact=Publications+%26+Research&qterm=&lang_exact=English>
 
 ### World Bank East Asia
 * Articles: <http://www.worldbank.org/en/region/eap/whats-new>
-* Publications: <http://www.worldbank.org/en/region/eap/research/all>
+* Publications: <http://www.worldbank.org/en/region/eap/research/all?majdocty_exact=Publications+%26+Research&qterm=&lang_exact=English>
 
 ### Asian Development Bank
 * Articles (RSS): <http://feeds.feedburner.com/adb_news>
@@ -28,7 +28,7 @@ Content Sources
 * Publications: <http://www.unescap.org/publications>
 
 ### CACARRI
-* Articles (RSS): <http://www.cacaari.org/news/rss>
+* Articles: <http://www.cacaari.org/en.php?/news>
 
 ### APAARI
 * Events (RSS): <http://www.apaari.org/events/feed>
