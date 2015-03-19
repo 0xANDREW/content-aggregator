@@ -9,5 +9,7 @@ agg_env
 *.sqlite
 *.env
 private
-  
+venv
+*.gz
+      
     
